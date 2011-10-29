@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Demo procrastination</title>
+    <script src="lib/zepto.js" type="text/javascript" charset="utf-8"></script>
+    <script src="lib/streamer.js" type="text/javascript" charset="utf-8"></script>
+    <script src="procrastination.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+      $(function(){
+        s = Procrastination($('p'))
+              .each(function(e){ $(e).append(" World!") })
+              .each(function(e){ $(e).append(" " + new Date()) })
+              .attr("class")
+              .each(function(e){console.log(e)})
+        /*      
+        setInterval(function(){
+          $(document.body).append('<p class="blah">Hello</p>')
+        }, 2000)
+        */
+      })
+    </script>
+  </head>
+  <body>
+    <p class="demo">
+      Hello
+    </p>
+  </body>
+</html>
