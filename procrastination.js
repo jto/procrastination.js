@@ -31,12 +31,12 @@ var Procrastination = (function($, S){
 	/**
 	* streamer support
 	*/
-	//P.fn.append = function(s){ return $P(S.filter(s, this.stream))}
+	//P.fn.append = function(s){}
 	P.fn.filter = function(ƒ){ return $P(S.filter(ƒ, this.stream))}
 	P.fn.map = function(ƒ){ return $P(S.map(ƒ, this.stream))}
 	P.fn.reduce = function(ƒ, initial){ return $P(S.reduce(ƒ, this.stream, initial))}
 	P.fn.merge = function(){ return $P(S.merge(this.stream))}
-	
+	P.fn.head = function(n){ return $P(S.head(this.stream, n))}
 	P.fn.each = function(ƒ){ 
 		this.stream(ƒ,noop); return this
 	}
@@ -46,7 +46,8 @@ var Procrastination = (function($, S){
 				merged = S.merge(ss)
 		return $P(merged)
 	}
-		
+	
+	
 	/**
 	* Zepto support
 	*/
@@ -69,6 +70,12 @@ var Procrastination = (function($, S){
 		})
 	}
 	
+	P.fn.appendTo = function(selector){
+		return this.each(function(e){
+			$(e).appendTo(selector)
+		})
+	}
+	
 	P.prototype = P.fn
 	return $P
 	
@@ -78,5 +85,6 @@ var Procrastination = (function($, S){
 	filter: filter,
 	append: append,
 	reduce: reduce,
-	merge: merge
+	merge: merge,
+	head:head
 })
