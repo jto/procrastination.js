@@ -17,6 +17,8 @@ var M = (function(){
 	M.fn.flatten  = function(){
 		return this.flatmap(identity)
 	},
+	
+	//filter depends of zero and zip, not sure it's a good thing
 	M.fn.filter = function(predicate){
 		return this.map(predicate)
 							.zip(this)
@@ -38,10 +40,10 @@ var M = (function(){
 
 	//Zip
 	M.fn.zip = function(other){ throw "You must override the zip method" },
-	M.fn.zipWith = function(ƒs){
-		return this.zip(ƒs)
+	M.fn.zipWith = function(ƒ, stream){
+		return this.zip(stream)
 							.map(function(v){
-								return (v[1])(v[0])
+								return ƒ(v[0], v[1])
 							})
 	},
 	// M.fn.unzip = function(other){ throw "You must override the unzip method" },
@@ -120,15 +122,16 @@ var Stream = (function(){
 	return Stream
 })()
 
-test = Stream.range(1, 10)
-				.map(function(v){
-			 		return v + 1
-				})
-				.drop(5)
-				.filter(function(v){
-					return !(v % 2)
-				})
-				.zip(Stream.range(1, 10))
+function fibs(){
+	return Stream.cons(0, function(){
+		return Stream.cons(1, function(){
+			return fibs().zipWith(function(a, b){
+				return a + b
+			}, fibs().tail())
+		})
+	})
+}
+
 
 // ===================
 // = Procrastination =
