@@ -1,22 +1,23 @@
-// =====================
-// = Monadic functions =
-// =====================
 var M = (function(){
 	function identity(a){ return a }
 	function M(){}
 	M.fn = {}
+	
 	M.fn.unit		= function(ƒ){ throw "You must override the unit method" }
 	M.fn.flatmap 	= function(ƒ){ throw "You must override the flatmap method" }
-	M.fn.map			= function(ƒ){
+	
+	//Monadic functions
+	M.fn.map = function(ƒ){
 		var me = this
 		return this.flatmap(function(v){
 			return this.unit(ƒ.call(me, v))
 		})
 	}
-	M.fn.flatten 	= function(){
+	//aka: join
+	M.fn.flatten  = function(){
 		return this.flatmap(identity)
 	},
-	M.fn.filter		= function(predicate){
+	M.fn.filter = function(predicate){
 		return this.map(predicate)
 							.zip(this)
 							.flatmap(function(xs){
@@ -27,12 +28,26 @@ var M = (function(){
 							})
 	},
 
-	// M.fn.zip			= function(other){ throw "You must override the zip method" },
-	// M.fn.sequence = function(){ throw "undefined method sequence" },
+	// M.fn.sequence = function(){ throw "TODO: sequence" },
+	// M.fn.replicate = function(){ throw "TODO: replicate" },
+	// M.fn.liftM = function(){ throw "TODO: liftM" },
+	
+	//Monoid
 	M.fn.zero  	= function(){ throw "You must override the zero method" },
-	M.fn.append  	= function(){ throw "You must override the append method" },
+	M.fn.append  	= function(){ throw "You must override the append method" }
+
+	//Zip
+	M.fn.zip = function(other){ throw "You must override the zip method" },
+	M.fn.zipWith = function(ƒs){
+		return this.zip(ƒs)
+							.map(function(v){
+								return (v[1])(v[0])
+							})
+	},
+	// M.fn.unzip = function(other){ throw "You must override the unzip method" },
 	return M
 })()
+
 
 // ======================
 // = Scala like Streams =
