@@ -1,3 +1,123 @@
+// =====================
+// = Monadic functions =
+// =====================
+var M = (function(){
+	function identity(a){ return a }
+	function M(){}
+	M.fn = {}
+	M.fn.unit		= function(ƒ){ throw "You must override the unit method" }
+	M.fn.flatmap 	= function(ƒ){ throw "You must override the flatmap method" }
+	M.fn.map			= function(ƒ){
+		var me = this
+		return this.flatmap(function(v){
+			return this.unit(ƒ.call(me, v))
+		})
+	}
+	M.fn.flatten 	= function(){
+		return this.flatmap(identity)
+	},
+	M.fn.filter		= function(predicate){
+		return this.map(predicate)
+							.zip(this)
+							.flatmap(function(xs){
+								if(xs[0])
+									return this.unit(xs[1])
+								else
+									return this.zero()
+							})
+	},
+
+	// M.fn.zip			= function(other){ throw "You must override the zip method" },
+	// M.fn.sequence = function(){ throw "undefined method sequence" },
+	M.fn.zero  	= function(){ throw "You must override the zero method" },
+	M.fn.append  	= function(){ throw "You must override the append method" },
+	return M
+})()
+
+// ======================
+// = Scala like Streams =
+// ======================
+var Stream = (function(){
+	function Stream(h, t, empty){
+		this.head = h
+		this.tail = t
+		this.isEmpty = !!empty
+	}
+
+	Stream.cons = function(h, t){
+		return new Stream(h, t)
+	}
+
+	Stream.range = function(start, end){
+		if(start > end) return Stream.Empty
+		else return Stream.cons(start, function(){ return Stream.range(start + 1, end)})
+	}
+	Stream.unit = function(value){
+		return new Stream.cons(value, function(){ return Stream.Empty })
+	}
+
+	Stream.prototype = M.fn
+	Stream.prototype.zero = function(){ return Stream.Empty }
+	Stream.prototype.unit = Stream.unit
+
+	Stream.prototype.flatmap = function(ƒ){
+		var me = this
+		
+		if(this.isEmpty)
+			return this
+
+		var h = ƒ.call(me, me.head)
+
+		if(h.isEmpty)
+			return me.tail().flatmap(ƒ)
+
+		return Stream.cons(h.head, function(){
+			return h.tail().append(me.tail().flatmap(ƒ))
+		})
+	}
+
+	Stream.prototype.append = function(stream){
+		var me = this
+		if(this.isEmpty) return stream
+		return Stream.cons(this.head, function(){
+			return me.tail().append(stream)
+		})
+	}
+
+	Stream.prototype.zip = function(stream){
+		var me = this
+		if(this.isEmpty || stream.isEmpty) 
+			return Stream.Empty
+		return Stream.cons([this.head, stream.head], function(){
+			return me.tail().zip(stream.tail())
+		})
+	}
+
+	Stream.prototype.drop = function(n){
+		if(n > 0)
+			return this.tail().drop(n - 1)
+		else
+			return this
+	}
+
+	Stream.Empty = new Stream(undefined, function(){ return this }, true)
+
+	return Stream
+})()
+
+test = Stream.range(1, 10)
+				.map(function(v){
+			 		return v + 1
+				})
+				.drop(5)
+				.filter(function(v){
+					return !(v % 2)
+				})
+				.zip(Stream.range(1, 10))
+
+// ===================
+// = Procrastination =
+// ===================
 var Procrastination = (function($, S){
 	
 	var nodes = S.map(function(evt){ return evt.target }, nodeinserted)
