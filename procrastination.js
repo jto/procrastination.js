@@ -5,8 +5,10 @@ var M = (function(){
 	
 	M.fn.unit		= function(ƒ){ throw "You must override the unit method" }
 	M.fn.flatmap 	= function(ƒ){ throw "You must override the flatmap method" }
-	
+
 	//Monadic functions
+	M.fn.fold = function(i, ƒ){ throw "TODO" }
+	
 	M.fn.map = function(ƒ){
 		var me = this
 		return this.flatmap(function(v){
@@ -16,7 +18,7 @@ var M = (function(){
 	//aka: join
 	M.fn.flatten  = function(){
 		return this.flatmap(identity)
-	},
+	}
 	
 	//filter depends of zero and zip, not sure it's a good thing
 	M.fn.filter = function(predicate){
@@ -28,22 +30,20 @@ var M = (function(){
 								else
 									return this.zero()
 							})
-	},
+	}
 
 	// M.fn.sequence = function(){ throw "TODO: sequence" },
 	// M.fn.replicate = function(){ throw "TODO: replicate" },
 	M.fn.lift =  function(ƒ){
-		return this.map(function(v){
-			return ƒ(v)
-		})
-	},
+		return this.map(ƒ)
+	}
 	M.fn.lift2 = function(ƒ, m1){
 		return this.flatmap(function(v){
 			return m1.map(function(v1){
 				return ƒ(v, v1)
 			})
 		})
-	},
+	}
 	M.fn.lift3 = function(ƒ, m1, m2){
 		return this.flatmap(function(v){
 			return m1.flatmap(function(v1){
@@ -52,7 +52,7 @@ var M = (function(){
 				})
 			})
 		})
-	},
+	}
 	M.fn.lift4 = function(ƒ, m1, m2, m3){
 		return this.flatmap(function(v){
 			return m1.flatmap(function(v1){
@@ -63,7 +63,7 @@ var M = (function(){
 				})
 			})
 		})
-	},
+	}
 	M.fn.lift5 = function(ƒ, m1, m2, m3, m4){
 		return this.flatmap(function(v){
 			return m1.flatmap(function(v1){
@@ -76,22 +76,28 @@ var M = (function(){
 				})
 			})
 		})
-	},
+	}
 	
-	//Monoid
+	// Monoid
 	M.fn.zero  	= function(){ throw "You must override the zero method" },
 	M.fn.append = function(){ throw "You must override the append method" },
-	//M.fn.sum  	= function(){ throw "You must override the append method" }
+	//M.fn.sum  = function(){ throw "TODO: sum" }
 
-	//Zip
-	M.fn.zip = function(other){ throw "You must override the zip method" },
+	// Zip
+	M.fn.zip = function(other){
+		throw "You must override the zip method"
+	}
 	M.fn.zipWith = function(ƒ, stream){
 		return this.zip(stream)
-							.map(function(v){
+							.lift(function(v){
 								return ƒ(v[0], v[1])
 							})
-	},
-	// M.fn.unzip = function(other){ throw "You must override the unzip method" },
+	}
+	M.fn.unzip = function(){
+		var fst = function(v){return v[0]}
+		var snd = function(v){return v[1]}
+		return [this.lift(fst), this.lift(snd)]
+	}
 	return M
 })()
 
@@ -139,7 +145,7 @@ var Stream = (function(){
 			return me.tail().append(stream)
 		})
 	}
-
+	
 	Stream.prototype.zip = function(stream){
 		var me = this
 		if(this.isEmpty || stream.isEmpty) 
