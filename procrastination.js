@@ -32,11 +32,56 @@ var M = (function(){
 
 	// M.fn.sequence = function(){ throw "TODO: sequence" },
 	// M.fn.replicate = function(){ throw "TODO: replicate" },
-	// M.fn.liftM = function(){ throw "TODO: liftM" },
+	M.fn.lift =  function(ƒ){
+		return this.map(function(v){
+			return ƒ(v)
+		})
+	},
+	M.fn.lift2 = function(ƒ, m1){
+		return this.flatmap(function(v){
+			return m1.map(function(v1){
+				return ƒ(v, v1)
+			})
+		})
+	},
+	M.fn.lift3 = function(ƒ, m1, m2){
+		return this.flatmap(function(v){
+			return m1.flatmap(function(v1){
+				return m2.map(function(v2){
+					return ƒ(v, v1, v2)
+				})
+			})
+		})
+	},
+	M.fn.lift4 = function(ƒ, m1, m2, m3){
+		return this.flatmap(function(v){
+			return m1.flatmap(function(v1){
+				return m2.flatmap(function(v2){
+					return m3.map(function(v3){
+						return ƒ(v, v1, v2, v3)
+					})
+				})
+			})
+		})
+	},
+	M.fn.lift5 = function(ƒ, m1, m2, m3, m4){
+		return this.flatmap(function(v){
+			return m1.flatmap(function(v1){
+				return m2.flatmap(function(v2){
+					return m3.flatmap(function(v3){
+						return m4.map(function(v4){
+							return ƒ(v, v1, v2, v3, v4)
+						})
+					})
+				})
+			})
+		})
+	},
 	
 	//Monoid
 	M.fn.zero  	= function(){ throw "You must override the zero method" },
-	M.fn.append  	= function(){ throw "You must override the append method" }
+	M.fn.append = function(){ throw "You must override the append method" },
+	//M.fn.sum  	= function(){ throw "You must override the append method" }
 
 	//Zip
 	M.fn.zip = function(other){ throw "You must override the zip method" },
@@ -79,15 +124,9 @@ var Stream = (function(){
 
 	Stream.prototype.flatmap = function(ƒ){
 		var me = this
-		
 		if(this.isEmpty)
 			return this
-
 		var h = ƒ.call(me, me.head)
-
-		if(h.isEmpty)
-			return me.tail().flatmap(ƒ)
-
 		return Stream.cons(h.head, function(){
 			return h.tail().append(me.tail().flatmap(ƒ))
 		})
