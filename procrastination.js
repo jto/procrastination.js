@@ -147,22 +147,21 @@ var Input = {
 var Iteratee = (function(){
 	function I(){}
 	
-	I.prototype.run = function(v){ throw "you must override the step method" }	
+	I.prototype.run = function(v){ throw "you must override the step method" }
 	
 	I.Done = function(e){
 		this.e = e
 		this.Done = true
+		this.fold = function(done, cont){ return done(this.e) }
 	}
 	I.Cont = function(ƒ){
 		this.Cont = true
 		this.run = ƒ
+		this.fold = function(done, cont){ return cont(ƒ) }
 	}
 	
 	I.done = function(e){ return new I.Done(e) }
 	I.cont = function(ƒ){ return new I.Cont(ƒ) }
-		
-	// I.fn.flatmap = function(ƒ){ throw "TODO" }
-	// I.fn.run = function(ƒ){ throw "TODO" }
 	return I
 })()
 
@@ -270,20 +269,28 @@ var fibs = function(){
 }
 
 // Simple sum Iteratee, it stops when the sum is up to 6
-// return the sum of Elements it has seen
-var icount = function(v){
+var isum = function(v){
 	return function(i){
 		if(i.EOF)
 			return Iteratee.done(v)
 		else if(v > 6)
 			return Iteratee.done(v)
 		else if(i.Empty)
-			return Iteratee.cont(icount(v))
+			return Iteratee.cont(isum(v))
 		else if(i.El)
-			return Iteratee.cont(icount(i.e + v))
+			return Iteratee.cont(isum(i.e + v))
 	}
 }
-var i0 = Iteratee.cont(icount(0))
+var i0 = Iteratee.cont(isum(0))
+
+var isqrt = Stream.range(1,100) // Get a stream of number from 1 to 10
+			.enumerate(i0) // sum them until the sum is up to 10
+			.fold(function(e){ // fold the resulting itératee, gives us the result ^ 2
+				return Iteratee.done(e * e)
+				},
+				function(ƒ){
+					return Iteratee.cont(ƒ)
+			})
 
 // ===================
 // = Procrastination =
