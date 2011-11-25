@@ -312,6 +312,37 @@ var i0plus = i0.flatmap(function(e){
 
 var sumPlus = Stream.range(1,100).enumerate(i0plus)
 
+var iappend = function(v){
+	return function(i){
+		if(i.EOF)
+			return Iteratee.done(v)
+		else if(i.Empty)
+			return Iteratee.cont(iappend(v))
+		else if(i.El)
+		  if(i.e > 50)
+		    return Iteratee.done(v)
+		  else
+			  return Iteratee.cont(iappend(v + "," + i.e))
+	}
+}
+var iAcc = Iteratee.cont(iappend(""))
+
+var ireverse = function(v){
+	return function(i){
+		if(i.EOF)
+			return Iteratee.done(v)
+		else if(i.Empty)
+			return Iteratee.cont(ireverse(v))
+		else if(i.El)
+		  return Iteratee.cont(ireverse(v + "," + (i.e + '').split('').reverse().join('')))
+	}
+}
+var iReversed = Iteratee.cont(ireverse(""))
+
+var appendThenReverse = iAcc.flatmap(function(e){
+  return Iteratee.cont(ireverse(e))
+})
+
 // ===================
 // = Procrastination =
 // ===================
