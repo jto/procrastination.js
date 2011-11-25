@@ -147,8 +147,6 @@ var Input = {
 var Iteratee = (function(){
 	function I(){}
 	
-	I.prototype.run = function(v){ throw "you must override the step method" }
-	
 	I.Done = function(e){
 		this.e = e
 		this.Done = true
@@ -162,6 +160,24 @@ var Iteratee = (function(){
 	
 	I.done = function(e){ return new I.Done(e) }
 	I.cont = function(ƒ){ return new I.Cont(ƒ) }
+	
+	I.fn = {}
+	I.fn.run = function(v){ throw "you must override the run method" }
+	// XXX: there's somthing wrong here
+	I.fn.flatmap = function(ƒ){
+	  var me = this
+		return this.fold(
+			function(e){
+				return ƒ.call(me, e)
+			},
+			function(k){
+				return I.cont(function(e2){ return k(e2).flatmap(ƒ) })
+			}
+		)
+	}
+	
+	I.Done.prototype = I.Cont.prototype = I.fn
+	
 	return I
 })()
 
@@ -268,7 +284,6 @@ var fibs = function(){
 	})
 }
 
-// Simple sum Iteratee, it stops when the sum is up to 6
 var isum = function(v){
 	return function(i){
 		if(i.EOF)
@@ -281,16 +296,21 @@ var isum = function(v){
 			return Iteratee.cont(isum(i.e + v))
 	}
 }
+
+// Simple sum Iteratee, it stops when the sum is up to 6
 var i0 = Iteratee.cont(isum(0))
 
 var isqrt = Stream.range(1,100) // Get a stream of number from 1 to 10
 			.enumerate(i0) // sum them until the sum is up to 10
-			.fold(function(e){ // fold the resulting itératee, gives us the result ^ 2
-				return Iteratee.done(e * e)
-				},
-				function(ƒ){
-					return Iteratee.cont(ƒ)
-			})
+			// fold the resulting iteratee, gives us the result ^ 2
+			.fold(function(e){ return Iteratee.done(e * e) }, function(ƒ){ return Iteratee.cont(ƒ) })
+
+// bind streams
+var i0plus = i0.flatmap(function(e){
+  return Iteratee.done(e + 1)
+})
+
+var sumPlus = Stream.range(1,100).enumerate(i0plus)
 
 // ===================
 // = Procrastination =
