@@ -273,55 +273,34 @@ var Stream = (function(){
 
 
 var Reactive = (function() {
-	function R (ƒ, source, d) {
+	function R(source) {
 		this.source = source
-		this.lambda = ƒ
-	  source(function (element) {
-			return ƒ(element)
-		}, stop)
 	}
 	
 	R.prototype = M.fn
 	
 	R.prototype.zero = function(){ return R.Empty }
-	R.prototype.unit = function(s){ return R.on(identity, s) }
+	R.prototype.unit = function(s){ return R.on(s) }
 	
-	R.Empty = new R(identity, identity)
-	
-	// cons
-	R.on = function(ƒ, source) {
-		return new R(ƒ, source)
+	R.Empty = new R(identity)
+		
+	// source = function click(next){ $(document.body).click(next, false) }
+	R.on = function(source) {
+		return new R(source)
 	}
-	
-	// R.prototype.flatmap = function(ƒ){
-	//  var me = this
-	//  return R.on(function(v){
-	//    return me.append(ƒ(me.lambda(v)))
-	//  }, this.source)
-	// }
-	 
-	// Foldable
-	R.prototype.fold = function(i, ƒ){ throw "You must override the fold method" }
-	
-  // R.prototype.append = function(r){
-  //  var me = this
-  //  return R.on(identity, function(ƒ){
-  //    me.source(ƒ)
-  //    r.source(ƒ)
-  //  })
-  // },
-     
-	R.prototype.zip = function(other){
-		throw "You must override the zip method"
-	}
-			
-	// TODO: implement flatmap
+
 	R.prototype.map = function(ƒ){
 		var me = this
-		return R.on(function(v){
-		  return ƒ(me.lambda(v))
-		}, me.source)
+		return R.on(function(next){
+			me.source(function(e){ next(ƒ(e)) })
+		})
 	}
+	
+	R.prototype.foreach = function(ƒ){
+		this.source(ƒ)
+		return this
+	}
+	
 	return R
 })()
 

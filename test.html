@@ -30,12 +30,12 @@
 				}
 				function click(next){ $(document.body).click(next, false) }
 
-				moves = Reactive.on(identity, mousemove)
+				moves = Reactive.on(mousemove)
 					.map(function (evt) { return "move" })
-					.map(function (e) { console.log(e) })
+					.foreach(function (e) { console.log(e) })
 
-				var clicks = Reactive.on(identity, click)
-					.map(function(evt){ return "click" })
+				// var clicks = Reactive.on(click)
+				//	.map(function(evt){ return "click" })
 
 				// var all = moves.append(clicks)
 				// 				all.map(function(e){
