@@ -1,28 +1,53 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Demo procrastination</title>
-    <script src="lib/zepto.js" type="text/javascript" charset="utf-8"></script>
-    <script src="lib/streamer.js" type="text/javascript" charset="utf-8"></script>
-    <script src="procrastination.js" type="text/javascript" charset="utf-8"></script>
-    <script type="text/javascript" charset="utf-8">
-      $(function(){
-        s = Procrastination($('p'))
-              .each(function(e){ $(e).append(" World!") })
-              .each(function(e){ $(e).append(" " + new Date()) })
-              .attr("class")
-              .each(function(e){console.log(e)})
-        /*      
-        setInterval(function(){
-          $(document.body).append('<p class="blah">Hello</p>')
-        }, 2000)
-        */
-      })
-    </script>
-  </head>
-  <body>
-    <p class="demo">
-      Hello
-    </p>
-  </body>
+	<head>
+		<title>Demo procrastination</title>
+		<style type="text/css" media="screen">
+			html, body{
+				height: 100%;
+				width: 100%;
+			}
+		</style>
+		<script src="lib/zepto.js" type="text/javascript" charset="utf-8"></script>
+		<!-- <script src="lib/streamer.js" type="text/javascript" charset="utf-8"></script> -->
+		<script src="procrastination.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript" charset="utf-8">
+			$(function(){
+				// s = Procrastination($('p'))
+				//							 .each(function(e){ $(e).append(" World!") })
+				//							 .each(function(e){ $(e).append(" " + new Date()) })
+				//							 .attr("class")
+				//							 .each(function(e){console.log(e)})
+				/*
+				setInterval(function(){
+					$(document.body).append('<p class="blah">Hello</p>')
+				}, 2000)
+				*/
+
+				function mousemove(next){
+					console.log("source")
+					$(document.body).mousemove(next, false)
+				}
+				function click(next){ $(document.body).click(next, false) }
+
+				moves = Reactive.on(identity, mousemove)
+					.map(function (evt) { return "move" })
+					.map(function (e) { console.log(e) })
+
+				var clicks = Reactive.on(identity, click)
+					.map(function(evt){ return "click" })
+
+				// var all = moves.append(clicks)
+				// 				all.map(function(e){
+				// 					console.log(e)
+				// 				})
+
+			})
+		</script>
+	</head>
+	<body>
+		<p class="demo">
+			Hello
+		</p>
+	</body>
 </html>

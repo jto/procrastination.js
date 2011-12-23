@@ -1,5 +1,5 @@
-var M = (function(){
-	function identity(a){ return a }
+function identity(a){ return a }
+var M = (function(){	
 	function M(){}
 	M.fn = {}
 
@@ -19,7 +19,7 @@ var M = (function(){
 		return this.flatmap(identity)
 	}
 
-	//filter depends of zero and zip, not sure it's a good thing
+	//filter depends on zero and zip, not sure it's a good thing
 	M.fn.filter = function(predicate){
 		return this.map(predicate)
 		.zip(this)
@@ -108,8 +108,8 @@ var M = (function(){
 * @see: http://okmij.org/ftp/Haskell/Iteratee/DEFUN08-talk-notes.pdf
 * 
 * data Stream el = EOF (Maybe ErrMsg) | Chunk [el]
-*	data Iteratee el m a = IE done a
-* 												| IE cont (Maybe ErrMsg) (Stream el -> m (Iteratee el m a, Stream el))
+* data Iteratee el m a = IE done a
+*													| IE cont (Maybe ErrMsg) (Stream el -> m (Iteratee el m a, Stream el))
 * instance Monad m => Monad (Iteratee el m) instance MonadTrans (Iteratee el)
 */
 // type Enumerator a	= Iteratee a -> Iteratee a 
@@ -163,9 +163,9 @@ var Iteratee = (function(){
 	
 	I.fn = {}
 	I.fn.run = function(v){ throw "you must override the run method" }
-	// XXX: there's somthing wrong here
+
 	I.fn.flatmap = function(ƒ){
-	  var me = this
+		var me = this
 		return this.fold(
 			function(e){
 				return ƒ.call(me, e)
@@ -187,7 +187,7 @@ var Enumeratee = (function(){
 	function Ee(){}
 	Ee.fn = {}
 	// left to rigt composition
-	Ee.fn.lrcompose	= function(ƒ){ throw "TODO" }
+	Ee.fn.lrcompose = function(ƒ){ throw "TODO" }
 	//Composition with an Iteratee
 	Ee.fn.$$	= function(I){ throw "TODO" }
 	return Ee
@@ -206,7 +206,7 @@ var Stream = (function(){
 	Stream.cons = function(h, t){
 		return new Stream(h, t)
 	}
-
+		
 	Stream.range = function(start, end){
 		if(start > end) return Stream.Empty
 		else return Stream.cons(start, function(){ return Stream.range(start + 1, end) })
@@ -271,6 +271,60 @@ var Stream = (function(){
 	return Stream
 })()
 
+
+var Reactive = (function() {
+	function R (ƒ, source, d) {
+		this.source = source
+		this.lambda = ƒ
+	  source(function (element) {
+			return ƒ(element)
+		}, stop)
+	}
+	
+	R.prototype = M.fn
+	
+	R.prototype.zero = function(){ return R.Empty }
+	R.prototype.unit = function(s){ return R.on(identity, s) }
+	
+	R.Empty = new R(identity, identity)
+	
+	// cons
+	R.on = function(ƒ, source) {
+		return new R(ƒ, source)
+	}
+	
+	// R.prototype.flatmap = function(ƒ){
+	//  var me = this
+	//  return R.on(function(v){
+	//    return me.append(ƒ(me.lambda(v)))
+	//  }, this.source)
+	// }
+	 
+	// Foldable
+	R.prototype.fold = function(i, ƒ){ throw "You must override the fold method" }
+	
+  // R.prototype.append = function(r){
+  //  var me = this
+  //  return R.on(identity, function(ƒ){
+  //    me.source(ƒ)
+  //    r.source(ƒ)
+  //  })
+  // },
+     
+	R.prototype.zip = function(other){
+		throw "You must override the zip method"
+	}
+			
+	// TODO: implement flatmap
+	R.prototype.map = function(ƒ){
+		var me = this
+		return R.on(function(v){
+		  return ƒ(me.lambda(v))
+		}, me.source)
+	}
+	return R
+})()
+
 // ============
 // = Examples =
 // ============
@@ -307,7 +361,7 @@ var isqrt = Stream.range(1,100) // Get a stream of number from 1 to 10
 
 // bind streams
 var i0plus = i0.flatmap(function(e){
-  return Iteratee.done(e + 1)
+	return Iteratee.done(e + 1)
 })
 
 var sumPlus = Stream.range(1,100).enumerate(i0plus)
@@ -319,10 +373,10 @@ var iappend = function(v){
 		else if(i.Empty)
 			return Iteratee.cont(iappend(v))
 		else if(i.El)
-		  if(i.e > 50)
-		    return Iteratee.done(v)
-		  else
-			  return Iteratee.cont(iappend(v + "," + i.e))
+			if(i.e > 50)
+				return Iteratee.done(v)
+			else
+				return Iteratee.cont(iappend(v + "," + i.e))
 	}
 }
 var iAcc = Iteratee.cont(iappend(""))
@@ -334,104 +388,105 @@ var ireverse = function(v){
 		else if(i.Empty)
 			return Iteratee.cont(ireverse(v))
 		else if(i.El)
-		  return Iteratee.cont(ireverse(v + "," + (i.e + '').split('').reverse().join('')))
+			return Iteratee.cont(ireverse(v + "," + (i.e + '').split('').reverse().join('')))
 	}
 }
 var iReversed = Iteratee.cont(ireverse(""))
 
 var appendThenReverse = iAcc.flatmap(function(e){
-  return Iteratee.cont(ireverse(e))
+	return Iteratee.cont(ireverse(e))
 })
 
 // ===================
 // = Procrastination =
 // ===================
-var Procrastination = (function($, S){
 
-	var nodes = S.map(function(evt){ return evt.target }, nodeinserted)
-	function nodeinserted(next, stop){
-		$('*').live('DOMNodeInserted', next, false)
-	}
-
-	function P(stream){
-		this.stream = stream || S.empty
-	}
-
-	function noop(){}
-
-	// ¨Pattern matching wouldn't hurt...
-	function $P(selector, context){
-		if(!selector) return new P()
-		else if(selector instanceof P) return selector
-		else if($.isArray(selector)) return new P(S.list.apply(this, selector))
-		else if($.isFunction(selector)) return new P(selector) // stream
-		else if(selector.selector){ //Zepto object
-			var inserted = S.filter(function(e){
-					return $(e).is(selector.selector) // TODO, test context
-			}, nodes)
-			return new P(S.append(S.list.apply(this, selector), inserted))
-		}
-		else{ return new P(S.list(selector)) }
-	}
-
-	P.fn = {}
-
-	/**
-	* streamer support
-	*/
-	//P.fn.append = function(s){}
-	P.fn.filter = function(ƒ){ return $P(S.filter(ƒ, this.stream))}
-	P.fn.map = function(ƒ){ return $P(S.map(ƒ, this.stream))}
-	P.fn.reduce = function(ƒ, initial){ return $P(S.reduce(ƒ, this.stream, initial))}
-	P.fn.merge = function(){ return $P(S.merge(this.stream))}
-	P.fn.head = function(n){ return $P(S.head(this.stream, n))}
-	P.fn.each = function(ƒ){
-		this.stream(ƒ,noop); return this
-	}
-	P.fn.flatmap = function(ƒ) {
-		var sp = this.map(ƒ).stream,
-		ss = S.map(function(e){ return e.stream }, sp)
-		merged = S.merge(ss)
-		return $P(merged)
-	}
-
-	/**
-	* Zepto support
-	*/
-	P.fn.attr = function(name, value){
-		return this.flatmap(function(e){
-			return $P($(e).attr(name, value))
-		})
-	}
-
-	P.fn.val = function(v){
-		return this.map(function(e){
-			return $(e).val(v)
-		})
-	}
-
-	P.fn.bind = function(event) {
-		return this.flatmap(function(e){
-			var triggered = function(next, stop){ $(e).bind(event, next) }
-			return $P(triggered)
-		})
-	}
-
-	P.fn.appendTo = function(selector){
-		return this.each(function(e){
-			$(e).appendTo(selector)
-		})
-	}
-
-	P.prototype = P.fn
-	return $P
-
-})(Zepto, {
-	list: list,
-	map: map,
-	filter: filter,
-	append: append,
-	reduce: reduce,
-	merge: merge,
-	head:head
-})
+// var Procrastination = (function($, S){
+// 
+//	var nodes = S.map(function(evt){ return evt.target }, nodeinserted)
+//	function nodeinserted(next, stop){
+//		$('*').live('DOMNodeInserted', next, false)
+//	}
+// 
+//	function P(stream){
+//		this.stream = stream || S.empty
+//	}
+// 
+//	function noop(){}
+// 
+//	// ¨Pattern matching wouldn't hurt...
+//	function $P(selector, context){
+//		if(!selector) return new P()
+//		else if(selector instanceof P) return selector
+//		else if($.isArray(selector)) return new P(S.list.apply(this, selector))
+//		else if($.isFunction(selector)) return new P(selector) // stream
+//		else if(selector.selector){ //Zepto object
+//			var inserted = S.filter(function(e){
+//					return $(e).is(selector.selector) // TODO, test context
+//			}, nodes)
+//			return new P(S.append(S.list.apply(this, selector), inserted))
+//		}
+//		else{ return new P(S.list(selector)) }
+//	}
+// 
+//	P.fn = {}
+// 
+//	/**
+//	* streamer support
+//	*/
+//	//P.fn.append = function(s){}
+//	P.fn.filter = function(ƒ){ return $P(S.filter(ƒ, this.stream))}
+//	P.fn.map = function(ƒ){ return $P(S.map(ƒ, this.stream))}
+//	P.fn.reduce = function(ƒ, initial){ return $P(S.reduce(ƒ, this.stream, initial))}
+//	P.fn.merge = function(){ return $P(S.merge(this.stream))}
+//	P.fn.head = function(n){ return $P(S.head(this.stream, n))}
+//	P.fn.each = function(ƒ){
+//		this.stream(ƒ,noop); return this
+//	}
+//	P.fn.flatmap = function(ƒ) {
+//		var sp = this.map(ƒ).stream,
+//		ss = S.map(function(e){ return e.stream }, sp)
+//		merged = S.merge(ss)
+//		return $P(merged)
+//	}
+// 
+//	/**
+//	* Zepto support
+//	*/
+//	P.fn.attr = function(name, value){
+//		return this.flatmap(function(e){
+//			return $P($(e).attr(name, value))
+//		})
+//	}
+// 
+//	P.fn.val = function(v){
+//		return this.map(function(e){
+//			return $(e).val(v)
+//		})
+//	}
+// 
+//	P.fn.bind = function(event) {
+//		return this.flatmap(function(e){
+//			var triggered = function(next, stop){ $(e).bind(event, next) }
+//			return $P(triggered)
+//		})
+//	}
+// 
+//	P.fn.appendTo = function(selector){
+//		return this.each(function(e){
+//			$(e).appendTo(selector)
+//		})
+//	}
+// 
+//	P.prototype = P.fn
+//	return $P
+// 
+// })(Zepto, {
+//	list: list,
+//	map: map,
+//	filter: filter,
+//	append: append,
+//	reduce: reduce,
+//	merge: merge,
+//	head:head
+// })
