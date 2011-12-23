@@ -24,15 +24,18 @@
 				}, 2000)
 				*/
 
-				function mousemove(next){
-					console.log("source")
-					$(document.body).mousemove(next, false)
-				}
-				function click(next){ $(document.body).click(next, false) }
+				function mousemove(next){ $(document.body).mousemove(next, false) }
+				function key(next){ $(document.body).keydown(next, false) }
 
-				moves = Reactive.on(mousemove)
-					.map(function (evt) { return "move" })
-					.foreach(function (e) { console.log(e) })
+				new Reactive()
+					.map(function (evt) {
+						return evt
+					})
+					.foreach(function(e){
+						console.log(e)
+					})
+					.on(mousemove)
+					.on(key)
 
 				// var clicks = Reactive.on(click)
 				//	.map(function(evt){ return "click" })

@@ -273,34 +273,35 @@ var Stream = (function(){
 
 
 var Reactive = (function() {
-	function R(source) {
-		this.source = source
+	function R(lambda) {
+		this.lambda = lambda || identity
 	}
 	
 	R.prototype = M.fn
-	
-	R.prototype.zero = function(){ return R.Empty }
-	R.prototype.unit = function(s){ return R.on(s) }
-	
-	R.Empty = new R(identity)
 		
-	// source = function click(next){ $(document.body).click(next, false) }
-	R.on = function(source) {
-		return new R(source)
+	R.Empty = new R(identity)
+
+	R.prototype.on = function(source) {
+		source(this.lambda)
+		return this
 	}
 
 	R.prototype.map = function(ƒ){
 		var me = this
-		return R.on(function(next){
-			me.source(function(e){ next(ƒ(e)) })
+		return new R(function(e){
+			return ƒ(me.lambda(e))
 		})
 	}
-	
+		
 	R.prototype.foreach = function(ƒ){
-		this.source(ƒ)
-		return this
+		var me = this
+		return new R(function(e){
+			var v = me.lambda(e)
+			ƒ(v)
+			return v
+		})
 	}
-	
+		
 	return R
 })()
 
