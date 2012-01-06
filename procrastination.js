@@ -280,16 +280,29 @@ var Reactive = (function() {
 	R.prototype = M.fn
 		
 	R.Empty = new R(identity)
+	R.prototype.unit = function(v){
+		return new R(function(){return v})
+	}
 
 	R.prototype.on = function(source) {
 		source(this.lambda)
 		return this
 	}
 
+	/*
 	R.prototype.map = function(ƒ){
 		var me = this
 		return new R(function(e){
 			return ƒ(me.lambda(e))
+		})
+	}
+	*/
+
+	// (R, (v => R)) => R
+	R.prototype.flatmap = function(ƒ){
+		var me = this
+		return new R(function(e){
+			return ƒ.call(me, me.lambda(e)).lambda(e)
 		})
 	}
 		

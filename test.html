@@ -26,7 +26,8 @@
 
 				function mousemove(next){ $(document.body).mousemove(next, false) }
 				function key(next){ $(document.body).keydown(next, false) }
-
+				function click(next){ $(document.body).click(next, false) }
+				
 				new Reactive()
 					.map(function (evt) {
 						return evt
@@ -35,8 +36,20 @@
 						console.log(e)
 					})
 					.on(mousemove)
+					.foreach(function(v){
+						console.log("PAF: %o", v)
+					})
 					.on(key)
 
+				/*
+				new Reactive()
+					.flatmap(function(v){
+						return new Reactive()
+							.map(function(evt){ return "lol " + evt })
+					})
+					.foreach(function(v){ console.log(v)	})
+					.on(click)
+				*/
 				// var clicks = Reactive.on(click)
 				//	.map(function(evt){ return "click" })
 
