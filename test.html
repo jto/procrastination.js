@@ -28,6 +28,7 @@
 				function key(next){ $(document.body).keydown(next, false) }
 				function click(next){ $(document.body).click(next, false) }
 				
+				/*
 				new Reactive()
 					.map(function (evt) {
 						return evt
@@ -35,21 +36,30 @@
 					.foreach(function(e){
 						console.log(e)
 					})
-					.on(mousemove)
+					.on(click)
 					.foreach(function(v){
 						console.log("PAF: %o", v)
 					})
 					.on(key)
-
+				*/
 				/*
+				var logger = new Reactive().foreach(function(e){ console.log(e) }),
+					r1 = logger.on(key),
+					r2 = logger.on(click),
+					both = r1.zip(r2).flatmap(logger)
+				*/
+				
 				new Reactive()
 					.flatmap(function(v){
 						return new Reactive()
 							.map(function(evt){ return "lol " + evt })
 					})
+					.map(function(e){
+						return '--> ' + e
+					})
 					.foreach(function(v){ console.log(v)	})
 					.on(click)
-				*/
+				
 				// var clicks = Reactive.on(click)
 				//	.map(function(evt){ return "click" })
 

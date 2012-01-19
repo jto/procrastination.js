@@ -289,15 +289,6 @@ var Reactive = (function() {
 		return this
 	}
 
-	/*
-	R.prototype.map = function(ƒ){
-		var me = this
-		return new R(function(e){
-			return ƒ(me.lambda(e))
-		})
-	}
-	*/
-
 	// (R, (v => R)) => R
 	R.prototype.flatmap = function(ƒ){
 		var me = this
@@ -305,6 +296,20 @@ var Reactive = (function() {
 			return ƒ.call(me, me.lambda(e)).lambda(e)
 		})
 	}
+	
+	// DOES NOT WORK
+	// R.prototype.zip = function(r){
+	// 		var me = this
+	// 		return me.flatmap(function(v1){
+	// 			return r.map(function(v2){
+	// 				return [v1, v2]
+	// 			})
+	// 		})
+	// 	}
+		
+	R.prototype.fold = function(i, ƒ){ throw "TODO" }
+	R.prototype.zero = function(){ throw "TODO" },
+	R.prototype.append = function(){ throw "TODO" },
 		
 	R.prototype.foreach = function(ƒ){
 		var me = this
