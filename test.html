@@ -13,11 +13,11 @@
 		<script src="procrastination.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(function(){
-				// s = Procrastination($('p'))
-				//							 .each(function(e){ $(e).append(" World!") })
-				//							 .each(function(e){ $(e).append(" " + new Date()) })
-				//							 .attr("class")
-				//							 .each(function(e){console.log(e)})
+//				s = Procrastination($('p'))
+//					.each(function(e){ $(e).append(" World!") })
+//					.each(function(e){ $(e).append(" " + new Date()) })
+//					.attr("class")
+//					.each(function(e){console.log(e)})
 				/*
 				setInterval(function(){
 					$(document.body).append('<p class="blah">Hello</p>')
@@ -30,44 +30,20 @@
 				
 				/*
 				new Reactive()
-					.map(function (evt) {
-						return evt
-					})
-					.foreach(function(e){
-						console.log(e)
-					})
 					.on(click)
 					.foreach(function(v){
 						console.log("PAF: %o", v)
 					})
-					.on(key)
+					.subscribe()
 				*/
-				/*
+				
 				var logger = new Reactive().foreach(function(e){ console.log(e) }),
 					r1 = logger.on(key),
 					r2 = logger.on(click),
-					both = r1.zip(r2).flatmap(logger)
-				*/
+					both = r1.zip(r2)
 				
-				new Reactive()
-					.flatmap(function(v){
-						return new Reactive()
-							.map(function(evt){ return "lol " + evt })
-					})
-					.map(function(e){
-						return '--> ' + e
-					})
-					.foreach(function(v){ console.log(v)	})
-					.on(click)
+				both.subscribe()
 				
-				// var clicks = Reactive.on(click)
-				//	.map(function(evt){ return "click" })
-
-				// var all = moves.append(clicks)
-				// 				all.map(function(e){
-				// 					console.log(e)
-				// 				})
-
 			})
 		</script>
 	</head>

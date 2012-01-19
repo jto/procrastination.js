@@ -273,8 +273,9 @@ var Stream = (function(){
 
 
 var Reactive = (function() {
-	function R(lambda) {
+	function R(lambda, sources) {
 		this.lambda = lambda || identity
+		this.sources = sources || []
 	}
 	
 	R.prototype = M.fn
@@ -284,9 +285,15 @@ var Reactive = (function() {
 		return new R(function(){return v})
 	}
 
-	R.prototype.on = function(source) {
-		source(this.lambda)
-		return this
+	R.prototype.on = function(s) {
+		return new R(this.lambda, this.sources.concat([s]))
+	}
+	
+	R.prototype.subscribe = function() {
+		var me = this
+		this.sources.forEach(function(s){
+			s(me.lambda)
+		})
 	}
 
 	// (R, (v => R)) => R
@@ -294,18 +301,12 @@ var Reactive = (function() {
 		var me = this
 		return new R(function(e){
 			return ƒ.call(me, me.lambda(e)).lambda(e)
-		})
+		}, this.sources)
 	}
 	
-	// DOES NOT WORK
-	// R.prototype.zip = function(r){
-	// 		var me = this
-	// 		return me.flatmap(function(v1){
-	// 			return r.map(function(v2){
-	// 				return [v1, v2]
-	// 			})
-	// 		})
-	// 	}
+	R.prototype.zip = function(r){
+		// GNNNIIIIIII
+	}
 		
 	R.prototype.fold = function(i, ƒ){ throw "TODO" }
 	R.prototype.zero = function(){ throw "TODO" },
@@ -317,7 +318,7 @@ var Reactive = (function() {
 			var v = me.lambda(e)
 			ƒ(v)
 			return v
-		})
+		},this.sources)
 	}
 		
 	return R
