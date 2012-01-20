@@ -280,13 +280,25 @@ var Reactive = (function() {
 	
 	R.prototype = M.fn
 		
-	R.Empty = new R(identity)
+	R.Empty = new R()
 	R.prototype.unit = function(v){
-		return new R(function(){return v})
+		return new R(function(){ return v })
 	}
 
 	R.prototype.on = function(s) {
 		return new R(this.lambda, this.sources.concat([s]))
+	}
+	
+	R.prototype.drop = function(n) {
+		var srcs = this.sources
+		return new R(this.lambda, [function(next){
+			srcs.forEach(function(s){
+				s(function(v){
+					if(n) n--
+					else next(v)
+				})
+			})
+		}])
 	}
 	
 	R.prototype.subscribe = function() {
@@ -306,9 +318,13 @@ var Reactive = (function() {
 	
 	R.prototype.zip = function(r){
 		// GNNNIIIIIII
+		throw "TODO"
 	}
-		
-	R.prototype.fold = function(i, ƒ){ throw "TODO" }
+	
+	R.prototype.fold = function(i, ƒ){
+		throw "TODO"
+	}
+	
 	R.prototype.zero = function(){ throw "TODO" },
 	R.prototype.append = function(){ throw "TODO" },
 		

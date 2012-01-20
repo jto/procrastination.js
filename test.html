@@ -28,22 +28,20 @@
 				function key(next){ $(document.body).keydown(next, false) }
 				function click(next){ $(document.body).click(next, false) }
 				
-				/*
 				new Reactive()
 					.on(click)
+					.drop(2)
 					.foreach(function(v){
 						console.log("PAF: %o", v)
 					})
 					.subscribe()
-				*/
-				
+				/*
 				var logger = new Reactive().foreach(function(e){ console.log(e) }),
 					r1 = logger.on(key),
 					r2 = logger.on(click),
 					both = r1.zip(r2)
-				
 				both.subscribe()
-				
+				*/
 			})
 		</script>
 	</head>
