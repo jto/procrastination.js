@@ -300,11 +300,11 @@ var Reactive = (function() {
 			})
 		}])
 	}
-	
+		
 	R.prototype.subscribe = function() {
 		var me = this
 		this.sources.forEach(function(s){
-			s(me.lambda)
+			s.apply(me, me.lambda)
 		})
 	}
 
@@ -317,8 +317,23 @@ var Reactive = (function() {
 	}
 	
 	R.prototype.zip = function(r){
-		// GNNNIIIIIII
-		throw "TODO"
+		var srcs = this.sources,
+			lmbd = this.lambda
+		return new R(identity, [function(next){
+			var buffer = [],
+			me = this
+			srcs.forEach(function(s){
+				s(function(v){ buffer.push(lmbd(v)) })
+			})
+			r.sources.forEach(function(s){
+				s(function(v){
+					if(buffer.length){
+						me.lambda([buffer[0], r.lambda(v)])
+						buffer = buffer.slice(1)
+					}
+				})
+			})
+		}])
 	}
 	
 	R.prototype.fold = function(i, ƒ){
