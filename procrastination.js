@@ -283,12 +283,12 @@ var Reactive = (function() {
 		
 	R.Empty = new R()
 	R.prototype.unit = function(v){
-		return new R(function(){ return v })
+		return new R(identity, function(n){ return n(v) })
 	}
 
 	R.prototype.on = function(s) {
 		var me = this
-		return new R(this.lambda, function(next){
+		return new R(this.lambda, function (next){
 			me.source(next)
 			s(next)
 		})
@@ -309,12 +309,20 @@ var Reactive = (function() {
 	}
 
 	// (R, (v => R)) => R
-	// XXX: poorly done, filter wont filter anything with that
+	// XXX: poorly done
+	// TODO: merge source && lambda ?
 	R.prototype.flatmap = function(ƒ){
 		var me = this
-		return new R(function(e){
-			return ƒ.call(me, me.lambda(e)).lambda(e)
-		}, this.source)
+		return new R(identity, function(n){
+			me.source(function(v){
+				var r = ƒ.call(me, me.lambda(v))
+				return r.source.call(r, function(v2){
+					console.log(r)
+					r.lambda(v2)
+				})
+			})
+		})
+		
 	}
 	
 	R.prototype.zip = function(r){

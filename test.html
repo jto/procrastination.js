@@ -28,7 +28,7 @@
 				function key(next){ $(document.body).keydown(next, false) }
 				function click(next){ $(document.body).click(next, false) }
 				
-
+				/*
 				new Reactive()
 					.on(click)
 					.drop(2)
@@ -42,17 +42,20 @@
 					r2 = new Reactive().on(click).map(function(){ return 'click' }),
 					both = r1.zip(r2).foreach(function(e){ console.log(e) })
 				both.subscribe()
-
+				*/
 
 				new Reactive()
 					.on(key)
 					.map(function(evt){
 						return evt.keyCode
 					})
+					/*
 					.filter(function(code){
+						console.log('code %o', code)
 						// ignore keypress on everything but 'a'
 						return code == 65
 					})
+					*/
 					.foreach(function(v){
 						console.log("keypress: %o", v)
 					})
