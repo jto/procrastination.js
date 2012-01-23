@@ -304,7 +304,7 @@ var Reactive = (function() {
 	R.prototype.subscribe = function() {
 		var me = this
 		this.sources.forEach(function(s){
-			s.apply(me, me.lambda)
+			s.call(me, me.lambda)
 		})
 	}
 
