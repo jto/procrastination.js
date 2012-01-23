@@ -10,7 +10,7 @@ var M = (function(){
 	M.fn.map = function(ƒ){
 		var me = this
 		return this.flatmap(function(v){
-			return this.unit(ƒ.call(me, v))
+			return me.unit(ƒ.call(me, v))
 		})
 	}
 
@@ -20,6 +20,7 @@ var M = (function(){
 	}
 
 	//filter depends on zero and zip, not sure it's a good thing
+	// TODO: rewrite, this is dumb
 	M.fn.filter = function(predicate){
 		return this.map(predicate)
 		.zip(this)
@@ -309,16 +310,15 @@ var Reactive = (function() {
 	}
 
 	// (R, (v => R)) => R
-	// XXX: poorly done
 	// TODO: merge source && lambda ?
 	R.prototype.flatmap = function(ƒ){
 		var me = this
-		return new R(identity, function(n){
+		return new R(identity, function(next){
+			var r = this
 			me.source(function(v){
-				var r = ƒ.call(me, me.lambda(v))
-				return r.source.call(r, function(v2){
-					console.log(r)
-					r.lambda(v2)
+				var react = ƒ.call(r, me.lambda(v))
+				react.source(function(v2){
+					next(v2)
 				})
 			})
 		})
@@ -330,7 +330,7 @@ var Reactive = (function() {
 			lmbd = this.lambda
 		return new R(identity, function(next){
 			var buffer = [],
-			me = this
+				me = this
 			src(function(v){ buffer.push(lmbd(v)) })
 			r.source(function(v){
 				if(buffer.length){

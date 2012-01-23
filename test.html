@@ -36,8 +36,9 @@
 						console.log("3+ click: %o", v)
 					})
 					.subscribe()
-
-
+				*/
+				
+				/*
 				var r1 = new Reactive().on(key).map(function(){ return 'clack' }),
 					r2 = new Reactive().on(click).map(function(){ return 'click' }),
 					both = r1.zip(r2).foreach(function(e){ console.log(e) })
@@ -46,21 +47,16 @@
 
 				new Reactive()
 					.on(key)
-					.map(function(evt){
-						return evt.keyCode
-					})
-					/*
-					.filter(function(code){
+					.filter(function(evt){
+						var code = evt.keyCode
 						console.log('code %o', code)
-						// ignore keypress on everything but 'a'
 						return code == 65
 					})
-					*/
 					.foreach(function(v){
 						console.log("keypress: %o", v)
 					})
 					.subscribe()
-					
+
 			})
 		</script>
 	</head>
