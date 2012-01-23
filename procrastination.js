@@ -78,10 +78,10 @@ var M = (function(){
 	}
 
 	// Foldable
-	M.fn.fold = function(i, ƒ){ throw "You must override the fold method" }
+	M.fn.fold = function(ƒ, i){ throw "You must override the fold method" }
 
 	// Monoid
-	M.fn.zero		= function(){ throw "You must override the zero method" },
+	M.fn.zero	= function(){ throw "You must override the zero method" },
 	M.fn.append = function(){ throw "You must override the append method" },
 	//M.fn.sum	= function(){ throw "TODO: sum" }
 
@@ -229,9 +229,9 @@ var Stream = (function(){
 		})
 	}
 
-	Stream.prototype.fold = function(i, ƒ){
+	Stream.prototype.fold = function(ƒ, i){
 		if(this.isEmpty) return i
-		return this.tail().fold(ƒ(i, this.head), ƒ)
+		return this.tail().fold(ƒ, ƒ(i, this.head))
 	}
 
 	Stream.prototype.append = function(stream){
@@ -336,7 +336,7 @@ var Reactive = (function() {
 		}])
 	}
 	
-	R.prototype.fold = function(i, ƒ){
+	R.prototype.fold = function(ƒ, i){
 		throw "TODO"
 	}
 	
