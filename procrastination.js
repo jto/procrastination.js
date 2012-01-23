@@ -273,9 +273,10 @@ var Stream = (function(){
 
 
 var Reactive = (function() {
-	function R(lambda, sources) {
+	var noop = function(){}
+	function R(lambda, source) {
 		this.lambda = lambda || identity
-		this.sources = sources || []
+		this.source = source || noop
 	}
 	
 	R.prototype = M.fn
@@ -286,61 +287,57 @@ var Reactive = (function() {
 	}
 
 	R.prototype.on = function(s) {
-		return new R(this.lambda, this.sources.concat([s]))
+		var me = this
+		return new R(this.lambda, function(next){
+			me.source(next)
+			s(next)
+		})
 	}
 	
 	R.prototype.drop = function(n) {
-		var srcs = this.sources
-		return new R(this.lambda, [function(next){
-			srcs.forEach(function(s){
-				s(function(v){
-					if(n) n--
-					else next(v)
-				})
+		var s = this.source
+		return new R(this.lambda, function(next){
+			s(function(v){
+				if(n) n--
+				else next(v)
 			})
-		}])
+		})
 	}
 		
 	R.prototype.subscribe = function() {
-		var me = this
-		this.sources.forEach(function(s){
-			s.call(me, me.lambda)
-		})
+		this.source.call(this, this.lambda)
 	}
 
 	// (R, (v => R)) => R
+	// XXX: poorly done, filter wont filter anything with that
 	R.prototype.flatmap = function(ƒ){
 		var me = this
 		return new R(function(e){
 			return ƒ.call(me, me.lambda(e)).lambda(e)
-		}, this.sources)
+		}, this.source)
 	}
 	
 	R.prototype.zip = function(r){
-		var srcs = this.sources,
+		var src = this.source,
 			lmbd = this.lambda
-		return new R(identity, [function(next){
+		return new R(identity, function(next){
 			var buffer = [],
 			me = this
-			srcs.forEach(function(s){
-				s(function(v){ buffer.push(lmbd(v)) })
+			src(function(v){ buffer.push(lmbd(v)) })
+			r.source(function(v){
+				if(buffer.length){
+					me.lambda([buffer[0], r.lambda(v)])
+					buffer = buffer.slice(1)
+				}
 			})
-			r.sources.forEach(function(s){
-				s(function(v){
-					if(buffer.length){
-						me.lambda([buffer[0], r.lambda(v)])
-						buffer = buffer.slice(1)
-					}
-				})
-			})
-		}])
+		})
 	}
 	
 	R.prototype.fold = function(ƒ, i){
 		throw "TODO"
 	}
 	
-	R.prototype.zero = function(){ throw "TODO" },
+	R.prototype.zero = function(){ return R.Empty },
 	R.prototype.append = function(){ throw "TODO" },
 		
 	R.prototype.foreach = function(ƒ){
@@ -349,7 +346,7 @@ var Reactive = (function() {
 			var v = me.lambda(e)
 			ƒ(v)
 			return v
-		},this.sources)
+		},this.source)
 	}
 		
 	return R

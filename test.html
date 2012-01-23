@@ -46,6 +46,13 @@
 
 				new Reactive()
 					.on(key)
+					.map(function(evt){
+						return evt.keyCode
+					})
+					.filter(function(code){
+						// ignore keypress on everything but 'a'
+						return code == 65
+					})
 					.foreach(function(v){
 						console.log("keypress: %o", v)
 					})
