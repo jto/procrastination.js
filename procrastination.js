@@ -3,6 +3,12 @@ var M = (function(){
 	function M(){}
 	M.fn = {}
 
+	M.clone = function(){
+		var o = {}
+		for (x in M.fn) o[x] = M.fn[x]
+		return o
+	}
+
 	M.fn.unit		= function(ƒ){ throw "You must override the unit method" }
 	M.fn.flatmap	= function(ƒ){ throw "You must override the flatmap method" }
 
@@ -204,7 +210,7 @@ var Stream = (function(){
 		return new Stream.cons(value, function(){ return Stream.Empty })
 	}
 
-	Stream.prototype = M.fn
+	Stream.prototype = M.clone()
 	Stream.prototype.zero = function(){ return Stream.Empty }
 	Stream.prototype.unit = Stream.unit
 
@@ -259,7 +265,10 @@ var Stream = (function(){
 	return Stream
 })()
 
-
+/**
+* @see: http://lamp.epfl.ch/~imaier/pub/DeprecatingObserversTR2010.pdf
+*/
+// XXX: should I have an EventSource ?
 var Reactive = (function() {
 	var noop = function(){}
 	function R(lambda, source) {
@@ -267,7 +276,7 @@ var Reactive = (function() {
 		this.source = source || noop
 	}
 
-	R.prototype = M.fn
+	R.prototype = M.clone()
 
 	R.Empty = new R()
 	R.prototype.unit = function(v){
@@ -292,6 +301,7 @@ var Reactive = (function() {
 		})
 	}
 		
+	// TODO: add a dispose method
 	R.prototype.subscribe = function() {
 		this.source.call(this, this.lambda)
 	}
@@ -359,6 +369,9 @@ var fibs = function(){
 		})
 	})
 }
+
+var ints = Stream.range(0, Infinity),
+	pairedInt = ints.zip(ints)
 
 var isum = function(v){
 	return function(i){
