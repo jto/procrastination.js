@@ -22,11 +22,9 @@ var M = (function(){
 	//filter depends on zero and zip, not sure it's a good thing
 	// TODO: rewrite, this is dumb
 	M.fn.filter = function(predicate){
-		return this.map(predicate)
-		.zip(this)
-		.flatmap(function(xs){
-			if(xs[0])
-				return this.unit(xs[1])
+		return this.flatmap(function(v){
+			if(predicate(v))
+				return this.unit(v)
 			else
 				return this.zero()
 		})
