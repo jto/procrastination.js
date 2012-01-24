@@ -6,7 +6,6 @@ var M = (function(){
 	M.fn.unit		= function(ƒ){ throw "You must override the unit method" }
 	M.fn.flatmap	= function(ƒ){ throw "You must override the flatmap method" }
 
-	//Monadic functions
 	M.fn.map = function(ƒ){
 		var me = this
 		return this.flatmap(function(v){
@@ -14,13 +13,10 @@ var M = (function(){
 		})
 	}
 
-	//aka: join
 	M.fn.flatten	= function(){
 		return this.flatmap(identity)
 	}
 
-	//filter depends on zero and zip, not sure it's a good thing
-	// TODO: rewrite, this is dumb
 	M.fn.filter = function(predicate){
 		return this.flatmap(function(v){
 			if(predicate(v))
@@ -76,29 +72,26 @@ var M = (function(){
 		})
 	}
 
-	// Foldable
 	M.fn.fold = function(ƒ, i){ throw "You must override the fold method" }
-
-	// Monoid
 	M.fn.zero	= function(){ throw "You must override the zero method" },
 	M.fn.append = function(){ throw "You must override the append method" },
-	//M.fn.sum	= function(){ throw "TODO: sum" }
 
-	// Zip
-	M.fn.zip = function(other){
-		throw "You must override the zip method"
-	}
+	//M.fn.sum	= function(){ throw "TODO: sum" }
+	M.fn.zip = function(other){ throw "You must override the zip method" }
+
 	M.fn.zipWith = function(ƒ, stream){
 		return this.zip(stream)
 			.lift(function(v){
 				return ƒ(v[0], v[1])
 			})
 	}
+
 	M.fn.unzip = function(){
 		var fst = function(v){return v[0]}
 		var snd = function(v){return v[1]}
 		return [this.lift(fst), this.lift(snd)]
 	}
+
 	return M
 })()
 
@@ -108,7 +101,7 @@ var M = (function(){
 * 
 * data Stream el = EOF (Maybe ErrMsg) | Chunk [el]
 * data Iteratee el m a = IE done a
-*													| IE cont (Maybe ErrMsg) (Stream el -> m (Iteratee el m a, Stream el))
+*						| IE cont (Maybe ErrMsg) (Stream el -> m (Iteratee el m a, Stream el))
 * instance Monad m => Monad (Iteratee el m) instance MonadTrans (Iteratee el)
 */
 // type Enumerator a	= Iteratee a -> Iteratee a 
@@ -142,7 +135,7 @@ var Input = {
 	empty: function(){ return new Input.Empty() }
 }
 // data Iteratee a = IE done a
-//									| IE cont (Maybe ErrMsg) (Stream -> (Iteratee a,Stream))
+//					| IE cont (Maybe ErrMsg) (Stream -> (Iteratee a,Stream))
 var Iteratee = (function(){
 	function I(){}
 	
@@ -192,9 +185,6 @@ var Enumeratee = (function(){
 	return Ee
 })()
 
-// ======================
-// = Scala like Streams =
-// ======================
 var Stream = (function(){
 	function Stream(h, t, empty){
 		this.head = h
@@ -258,8 +248,7 @@ var Stream = (function(){
 	}
 
 	Stream.Empty = new Stream(undefined, function(){ return this }, true)
-	
-	// Enumeratee
+
 	Stream.prototype.enumerate = function(it){
 		var next = this.tail()
 		if(this.isEmpty) return it.run(Input.eof())
@@ -277,9 +266,9 @@ var Reactive = (function() {
 		this.lambda = lambda || identity
 		this.source = source || noop
 	}
-	
+
 	R.prototype = M.fn
-		
+
 	R.Empty = new R()
 	R.prototype.unit = function(v){
 		return new R(identity, function(n){ return n(v) })
