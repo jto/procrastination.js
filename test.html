@@ -24,11 +24,12 @@
 				}, 2000)
 				*/
 
-				function mousemove(next){ $(document.body).mousemove(next, false) }
-				function key(next){ $(document.body).keydown(next, false) }
-				function click(next){ $(document.body).click(next, false) }
+
 				
-				/*
+				function mousemove(next){ $(document.body).mousemove(next) }
+				function key(next){ $(document.body).keydown(next) }
+				function click(next){ $(document.body).click(next) }
+				
 				new Reactive()
 					.on(click)
 					.drop(2)
@@ -36,26 +37,26 @@
 						console.log("3+ click: %o", v)
 					})
 					.subscribe()
-				*/
 				
-				/*
-				var r1 = new Reactive().on(key).map(function(){ return 'clack' }),
+				var r1 = new Reactive().on(key).map(function(evt){ return evt.keyCode }),
 					r2 = new Reactive().on(click).map(function(){ return 'click' }),
 					both = r1.zip(r2).foreach(function(e){ console.log(e) })
 				both.subscribe()
-				*/
-
+				
+				/*
 				new Reactive()
 					.on(key)
-					.filter(function(evt){
-						var code = evt.keyCode
+					.map(function(evt){
+						return evt.keyCode
+					})
+					.filter(function(code){
 						return code == 65
 					})
 					.foreach(function(v){
 						console.log("keypress: %o", v)
 					})
 					.subscribe()
-
+				*/
 			})
 		</script>
 	</head>

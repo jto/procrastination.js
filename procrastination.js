@@ -268,7 +268,11 @@ var Stream = (function(){
 /**
 * @see: http://lamp.epfl.ch/~imaier/pub/DeprecatingObserversTR2010.pdf
 */
-// XXX: should I have an EventSource ?
+// TODO: should I have an EventSource ?
+// TODO: http://hackage.haskell.org/packages/archive/comonad/0.1.1/doc/html/Control-Comonad.html#t:Comonad
+// 			extract :: w a -> a 					// counit
+// 			duplicate :: w a -> w (w a)				// cojoin
+// 			extend :: (w a -> b) -> w a -> w b		// cobind
 var Reactive = (function() {
 	var noop = function(){}
 	function R(lambda, source) {
