@@ -6,7 +6,7 @@ $(function(){
 	* Views
 	*/
 	var views = {
-		todo: {			
+		todo: {
 			render: function(t){
 				var template = _.template($('#item-template').html())
 				return template(t)

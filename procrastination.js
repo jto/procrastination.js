@@ -295,6 +295,22 @@ var Reactive = (function() {
 		})
 	}
 	
+	R.prototype.group = function(i) {
+		var vs = [],
+			me = this
+		return this.flatmap(function(v){
+			if(vs.length == i - 1){
+				var r = vs.concat([v])
+				vs = []
+				return me.unit(r)
+			}
+			else{
+				vs.push(v)
+				return R.Empty
+			}
+		})
+	}
+	
 	R.prototype.drop = function(n) {
 		var s = this.source
 		return new R(this.lambda, function(next){
@@ -323,7 +339,19 @@ var Reactive = (function() {
 				})
 			})
 		})
-		
+	}
+	
+	R.prototype.then = function(r){
+		var me = this
+		return new R(identity, function(next){
+			me.source(function(v){
+				me.lambda(v)
+				r.foreach(function(v2){
+					next(v2)
+				})
+				.subscribe()
+			})
+		})
 	}
 	
 	R.prototype.zip = function(r){
