@@ -275,7 +275,7 @@ var Stream = (function(){
 // 			extend :: (w a -> b) -> w a -> w b		// cobind
 var Reactive = (function() {
 	var noop = function(){}
-	function R(lambda, source) {
+	function R(source, lambda) {
 		this.lambda = lambda || identity
 		this.source = source || noop
 	}
@@ -284,15 +284,15 @@ var Reactive = (function() {
 
 	R.Empty = new R()
 	R.prototype.unit = function(v){
-		return new R(identity, function(n){ return n(v) })
+		return new R(function(n){ return n(v) })
 	}
 
 	R.prototype.on = function(s) {
 		var me = this
-		return new R(this.lambda, function (next){
+		return new R(function (next){
 			me.source(next)
 			s(next)
-		})
+		}, this.lambda)
 	}
 	
 	R.prototype.group = function(i) {
@@ -311,18 +311,31 @@ var Reactive = (function() {
 		})
 	}
 	
+	R.prototype.sliding = function(s) {
+		var vs = [],
+			me = this
+		return this.flatmap(function(v){
+			if(vs.length == s)
+				vs = vs.slice(1).concat(v)
+			else
+				vs.push(v)
+			return me.unit(vs)
+		})
+	}
+	
 	R.prototype.drop = function(n) {
 		var s = this.source
-		return new R(this.lambda, function(next){
+		return new R(function(next){
 			s(function(v){
 				if(n) n--
 				else next(v)
 			})
-		})
+		}, this.lambda)
 	}
 		
 	// TODO: add a dispose method
 	R.prototype.subscribe = function() {
+		//this.source(this.lambda)
 		this.source.call(this, this.lambda)
 	}
 
@@ -330,7 +343,7 @@ var Reactive = (function() {
 	// TODO: merge source && lambda ?
 	R.prototype.flatmap = function(ƒ){
 		var me = this
-		return new R(identity, function(next){
+		return new R(function(next){
 			var r = this
 			me.source(function(v){
 				var react = ƒ.call(r, me.lambda(v))
@@ -341,13 +354,15 @@ var Reactive = (function() {
 		})
 	}
 	
-	R.prototype.then = function(r){
+	R.prototype.await = function(r){
 		var me = this
-		return new R(identity, function(next){
+		return new R(function(next){
 			me.source(function(v){
-				me.lambda(v)
-				r.foreach(function(v2){
-					next(v2)
+				var vn = me.lambda(v)
+				r.map(function(v2){
+					return [vn, v2]
+				}).foreach(function(vs){
+					next(vs)
 				})
 				.subscribe()
 			})
@@ -357,7 +372,7 @@ var Reactive = (function() {
 	R.prototype.zip = function(r){
 		var src = this.source,
 			lmbd = this.lambda
-		return new R(identity, function(next){
+		return new R(function(next){
 			var buffer = [],
 				me = this
 			src(function(v){ buffer.push(lmbd(v)) })
@@ -369,21 +384,22 @@ var Reactive = (function() {
 			})
 		})
 	}
-	
+
 	R.prototype.fold = function(ƒ, i){
 		throw "TODO"
 	}
-	
+
 	R.prototype.zero = function(){ return R.Empty },
 	R.prototype.append = function(){ throw "TODO" },
-		
+
 	R.prototype.foreach = function(ƒ){
 		var me = this
-		return new R(function(e){
-			var v = me.lambda(e)
-			ƒ(v)
-			return v
-		},this.source)
+		return new R(this.source, 
+			function(e){
+				var v = me.lambda(e)
+				ƒ(v)
+				return v
+			})
 	}
 		
 	return R
