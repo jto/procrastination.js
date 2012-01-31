@@ -1,35 +1,57 @@
 $(function(){
 	
 	// Models
-	function Todo(value){ return { text: value, done: false, since: new Date()} }
+	function Todo(value){ 
+		return 
+	}
 	
-	// Inputs
-	var values = new Reactive(function (next){ next($('#new-todo').val()) })
-	var source = new Reactive(function (next){ $('#new-todo').keydown(next) })
+	// Effects
+	// TODO: find a name fot that (Task ?)
+	var save = new Action()
+		.map(...)
+		.foreach(...)
+	
+	var addToList = new Action(function(todo){
+			return _.template($('#item-template').html())(t)
+		})
+		.foreach(function(){
+			
+		})
+
+	// Action()
+	var spinner = new Action(showSpinner)
+		.onComplete(removeSpinner) 
+
+	var cleanForm = new Action()
+		.foreach()
+
+	function gimmeSpin('#toto'){
+		return new Action(...)
+	}
+
+	var saveAndAdd = addToList
+		.and(gimmeSpin('#wait'))
+		.and(cleanForm)
+		.await(save)
+
+	// Sources
+	var values = new Reactive(function (next){ 
+		next($('#new-todo').val())
+	})
+
+	var source = new Reactive(function (next){ 
+			$('#new-todo').keydown(next)
+		})
 		.filter(function(evt){
 			return evt.keyCode == 13
 		})
-		.await(values)
+		.await(saveAndAdd)
 		.map(function(v){ 
 			return Todo(v[1])
 		})
-	
-	
-	// Outputs
-	var save = new Reactive(function(next){ setTimeout(function(){ next('pif') }, 500) })
 
-	source
-		.map(function(t){
-			return _.template($('#item-template').html())(t)
-		})
-		.foreach(function(t){
-			$('#todo-list').append(t)
-			$('#new-todo').val('')
-		})
-		.await(save)
-		.foreach(function(v){
-			console.log('saved >> %o', v)
-		})
+	// Controller
+	source.await(saveAndAdd)
 		.subscribe()
 	
 })

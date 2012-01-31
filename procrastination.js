@@ -265,6 +265,14 @@ var Stream = (function(){
 	return Stream
 })()
 
+var Action = (function() {
+	function A(lambda) {
+		this.lambda = lambda || identity
+		// I'll do it tomorrow
+	}
+	return A
+})()
+
 /**
 * @see: http://lamp.epfl.ch/~imaier/pub/DeprecatingObserversTR2010.pdf
 */
@@ -353,7 +361,7 @@ var Reactive = (function() {
 			})
 		})
 	}
-	
+
 	R.prototype.await = function(r){
 		var me = this
 		return new R(function(next){
