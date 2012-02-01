@@ -1,4 +1,6 @@
 function identity(a){ return a }
+function noop(){}
+
 var M = (function(){	
 	function M(){}
 	M.fn = {}
@@ -266,23 +268,76 @@ var Stream = (function(){
 })()
 
 var Action = (function() {
-	function A(lambda) {
-		this.lambda = lambda || identity
-		// I'll do it tomorrow
+	function A(ƒ, c) {
+		this.ƒ = ƒ || identity
+		this.complete = c || noop
 	}
+
+	A.prototype = M.clone()
+
+	A.Empty = new A()
+	
+	A.prototype.unit = function(v){
+		return new A(function(v2, next){
+			next(v)
+		})
+	}
+
+	A.prototype.onComplete = function(ƒ){
+		var me = this
+		return new A(this.ƒ, function(v){
+			me.complete.call(me, v)
+			ƒ.call(me, v)
+		})
+	}
+
+	A.prototype.do = function(v){
+		this.ƒ(v, this.complete)
+	}
+
+	A.prototype.flatmap = function(ƒ){
+		var me = this
+		return new A(function(v, next){
+			me.onComplete(function (v2) {
+				ƒ(v2).onComplete(next).do()
+			}).do(v)
+		}, noop)
+	}
+
+	// A.fn.fold = function(ƒ, i){ throw "You must override the fold method" }
+	// A.fn.zero = function(){ throw "You must override the zero method" }
+	// A.fn.append = function(){ throw "You must override the append method" }
+
+	A.prototype.then = function(a){
+		var me = this
+		return new A(function(v, next){
+			me.onComplete(function(v2){
+				a.ƒ(v2, next)
+			}).do(v)
+		}, a.complete)
+	}
+
+	A.prototype.and = function(a){
+		var me = this
+		return new A(function(v, next){
+			var values = [],
+				action = this
+			function sync(i){
+				return function (v){
+					values[i] = v
+					if(values[0] && values[1])
+						action.complete(values)
+				}
+			}
+			me.onComplete(sync(0)).do(v)
+			a.onComplete(sync(1)).do(v)
+		}, noop)
+	}
+
 	return A
 })()
 
-/**
-* @see: http://lamp.epfl.ch/~imaier/pub/DeprecatingObserversTR2010.pdf
-*/
-// TODO: should I have an EventSource ?
-// TODO: http://hackage.haskell.org/packages/archive/comonad/0.1.1/doc/html/Control-Comonad.html#t:Comonad
-// 			extract :: w a -> a 					// counit
-// 			duplicate :: w a -> w (w a)				// cojoin
-// 			extend :: (w a -> b) -> w a -> w b		// cobind
 var Reactive = (function() {
-	var noop = function(){}
 	function R(source, lambda) {
 		this.lambda = lambda || identity
 		this.source = source || noop
@@ -362,17 +417,11 @@ var Reactive = (function() {
 		})
 	}
 
-	R.prototype.await = function(r){
+	R.prototype.await = function(a){
 		var me = this
 		return new R(function(next){
 			me.source(function(v){
-				var vn = me.lambda(v)
-				r.map(function(v2){
-					return [vn, v2]
-				}).foreach(function(vs){
-					next(vs)
-				})
-				.subscribe()
+				a.onComplete(next).do(v)
 			})
 		})
 	}

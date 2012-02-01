@@ -30,18 +30,46 @@
 				function click(next){ $(document.body).click(next) }
 				//var click = $(document.body).click
 
-				var askServer = new Reactive().on(function(next){
-					setTimeout(function(){ next('lol') }, 1000)
+				var log = new Action(function(v, next){
+					console.log('-- %o', v)
+					next(v)
+				})
+
+				var asyncReverse = new Action(function(v, next){
+					setTimeout(function(){
+						next(v.split("").reverse().join(""))
+					}, 100)
+				})
+				
+				var askServer = new Action(function(v, next){
+					setTimeout(function(){ next('PONG') }, 100)
 					//$.get('http://localhost/', next)
 				})
+				
+				var wait5 = new Action(function(v, next){
+					// console.log('wait 5')
+					setTimeout(function(){
+						next(v)
+					}, 500)
+				})
+				
+				var reversedAskServer = askServer
+					.then(asyncReverse)
+					.and(wait5)
+					.map(function(v){
+						console.log('map %o', v)
+						return v[0]
+					})
 
 				new Reactive()
 					.on(click)
-					.foreach(function(e){ console.log('click') })
-					.await(askServer)
-					.foreach(function(e){ console.log(e) })
+					.await(reversedAskServer)
+					.map(function(v){
+						return "I'll do it later... " + v
+					})
+					.await(log)
 					.subscribe()
-				
+
 				/*
 				new Reactive()
 					.on(click)
