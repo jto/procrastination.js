@@ -47,7 +47,6 @@
 				})
 				
 				var wait5 = new Action(function(v, next){
-					// console.log('wait 5')
 					setTimeout(function(){
 						next(v)
 					}, 500)
@@ -57,13 +56,16 @@
 					.then(asyncReverse)
 					.and(wait5)
 					.map(function(v){
-						console.log('map %o', v)
 						return v[0]
 					})
 
+				var time = new Action(function(v, next){
+					next(new Date())
+				})
+
 				new Reactive()
 					.on(click)
-					.await(reversedAskServer)
+					.await(reversedAskServer.zip(time))
 					.map(function(v){
 						return "I'll do it later... " + v
 					})

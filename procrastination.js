@@ -305,9 +305,7 @@ var Action = (function() {
 	}
 
 	// A.prototype.fold = function(ƒ, i){ throw "You must override the fold method" }
-	// A.prototype.zero = function(){ throw "You must override the zero method" }
 	// A.prototype.append = function(){ throw "You must override the append method" }
-	// A.prototype.zip = function(other){ throw "You must override the zip method" }
 
 	A.prototype.then = function(a){
 		var me = this
@@ -334,6 +332,8 @@ var Action = (function() {
 			a.onComplete(sync(1)).do(v)
 		}, noop)
 	}
+	
+	A.prototype.zip = A.prototype.and
 
 	return A
 })()
