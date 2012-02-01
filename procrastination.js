@@ -274,9 +274,9 @@ var Action = (function() {
 	}
 
 	A.prototype = M.clone()
-
-	A.Empty = new A()
 	
+	A.Empty = new A()
+	A.prototype.zero = function(){ return A.Empty }
 	A.prototype.unit = function(v){
 		return new A(function(v2, next){
 			next(v)
@@ -299,14 +299,15 @@ var Action = (function() {
 		var me = this
 		return new A(function(v, next){
 			me.onComplete(function (v2) {
-				ƒ(v2).onComplete(next).do()
+				ƒ.call(me, v2).onComplete(next).do()
 			}).do(v)
 		}, noop)
 	}
 
-	// A.fn.fold = function(ƒ, i){ throw "You must override the fold method" }
-	// A.fn.zero = function(){ throw "You must override the zero method" }
-	// A.fn.append = function(){ throw "You must override the append method" }
+	// A.prototype.fold = function(ƒ, i){ throw "You must override the fold method" }
+	// A.prototype.zero = function(){ throw "You must override the zero method" }
+	// A.prototype.append = function(){ throw "You must override the append method" }
+	// A.prototype.zip = function(other){ throw "You must override the zip method" }
 
 	A.prototype.then = function(a){
 		var me = this
