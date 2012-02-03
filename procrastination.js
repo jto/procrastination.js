@@ -267,7 +267,7 @@ var Stream = (function(){
 	return Stream
 })()
 
-var Action = (function() {
+var Action = function(act) {
 	function A(ƒ, c) {
 		this.ƒ = ƒ || identity
 		this.complete = c || noop
@@ -333,10 +333,15 @@ var Action = (function() {
 		}, noop)
 	}
 	
+	A.prototype.wrap = function(a, b){
+		return this.and(a)
+			.then(b)
+	}
+	
 	A.prototype.zip = A.prototype.and
 
-	return A
-})()
+	return new A(act)
+}
 
 var Reactive = (function() {
 	function R(source, lambda) {
@@ -459,8 +464,22 @@ var Reactive = (function() {
 				return v
 			})
 	}
+	
+	R.prototype.match = function(c){
+		return this.filter(function(v){
+			if(v.length != c.length)
+				return false
+			for(var i = 0; i < v.length; i++)
+				if(v[i] !== c[i]) return false
+			return true
+		})
+	}
 		
-	return R
+	return {
+		on: function(s){
+			return new R(s)
+		}
+	}
 })()
 
 // ============

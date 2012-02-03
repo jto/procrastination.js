@@ -4,103 +4,112 @@ $(function(){
 	* Utilities Actions
 	* Should be provided by procrastination.js
 	*/
-	function PUT(url){
-		return new Action(function(data, next){
-			console.log('PUT %o', data)
-			setTimeout(function(){ next(data) }, 500)
-			//$.put(url, data, next)
+	var P = {
+		req: function (method, url){
+			return Action(function(data, next){
+				console.log('%s -> %o', method, data)
+				setTimeout(function(){ next(data) }, 500)
+			})
+		},
+		PUT :function(url){ return P.req('PUT', url) },
+		POST: function(url){ return P.req('POST', url) },
+		DELETE: function(url){ return P.req('DELETE', url) },
+		log: Action(function(v, n){
+			console.log('LOG: %o', v)
+			n(v)
 		})
 	}
-	
-	function POST(url){
-		return new Action(function(data, next){
-			console.log('POST %o', data)
-			setTimeout(function(){ next(data) }, 500)
-			//$.put(url, data, next)
-		})
-	}
-
-	var Append = new Action(function(view, next){
-		view.render()
-		next(view)
-	})
 	
 	/**
 	* Views
 	*/
-	var TodoIn = {
-		el: $('#new-todo'),
-
-		value: new Action(function(v, next){ 
-			next(TodoIn.el.val())
-		}),
-
-		clear: new Action(function(v, next){
-			TodoIn.el.val('')
-			next(v)
-		}),
-		
-		key: function(next){ $('#new-todo').keydown(next, false) }
-	}
-	
-	function Line(todo){
-		this.el = undefined
-		this.parent = $('#todo-list')
-		this.tmpl = _.template($('#item-template').html())
-		this.todo = todo
-	}
-	Line.prototype = {
-		render: function(){
-			this.el = $(this.tmpl(this.todo)).appendTo(this.parent)
-			return this
-		},
-		
-		del: function(next){
-			$('.todo-destroy', this.el).click(next)
-		},
-		
-		postpone: function(next){
-			$('.check', this.el).click(next)
-		}
+	function Spin(a){
+		var sp = new Spinner({
+				lines: 6,
+				length: 1,
+				width: 5,
+				radius: 11,
+				color: '#000',
+				speed: 1,
+				trail: 50,
+				shadow: false,
+				hwaccel: true
+			}),
+			show = Action(function(v, next){
+				sp.spin(document.getElementById('create-todo'))
+				next(v)
+			}),
+			hide = Action(function(v, next){
+				sp.stop()
+				next(v)
+			})
+		return a.and(show).then(hide)
 	}
 
-	/**
-	* Actions
-	*/
-	var Spinner = {
-		show: new Action(function(v, next){
-			console.log('doing stuff')
+	var Form = {
+		input: $('#new-todo'),
+		clear: Action(function(v, next){
+			Form.input.val('')
 			next(v)
 		}),
-		
-		hide: new Action(function(v, next){
-			console.log('Finished')
-			next(v)
+		value: Action(function(v, next){ 
+			next(Form.input.val())
 		})
 	}
+	
+	var Todo = {}	
+	Todo.tmpl = Action(function(todo, next){
+		var tmpl = _.template($('#item-template').html()),
+			el = $(tmpl(todo))
+				.appendTo('#todo-list')
+		next([todo, el])
+	})
+	
+	Todo.remove = function(v){
+		var el = v[1]
+		return Todo.del
+			.and(Action(function(v, next){
+				$(el).remove()
+				next(v)
+			}))
+	} 
+	
+	Todo.bind = Action(function(v, n){
+		var el = v[1]
+		Reactive
+			.on(function(next){
+				$('.todo-destroy', el[1]).click(next, false)
+			})
+			.map(function(evt){ return v })
+			.await(Todo.remove(v))
+			.subscribe()
+		n(v)
+	})
+	
+	Todo.add = Todo.tmpl.then(Todo.bind)
+	Todo.create = Spin(Todo.add.and(P.PUT('/todo')))
+	Todo.postpone = Spin(P.POST('/todo'))
+	Todo.del = Spin(P.DELETE('/todo'))
 
-	var NewTodo = Append
-		.and(TodoIn.clear)
-		.and(Spinner.show)
-		.and(PUT('/todo'))
-		.then(Spinner.hide)
-
-	var Postpone = POST('/todo')
-		.and(Spinner.show)
-		.then(Spinner.hide)
+	Todo.key = function(next){ $('#new-todo').keydown(next, false) }
 
 	/**
 	* Events
 	*/
-	new Reactive()
-		.on(TodoIn.key)
+	// Create
+	Reactive
+		.on(Todo.key)
 		.filter(function(evt){
 			return evt.keyCode == 13
 		})
-		.await(TodoIn.value)
-		.map(function(v){
-			return new Line({ text: v, done: false, since: new Date()})
+		.await(Form.value)
+		.filter(function(v){
+			return !!v.trim().length
 		})
-		.await(NewTodo)
+		.map(function(v){
+			return { text: v, done: false, since: new Date() }
+		})
+		.await(Form.clear.and(Todo.create))
 		.subscribe()
+
 })

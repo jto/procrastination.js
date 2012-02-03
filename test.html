@@ -29,23 +29,42 @@
 				function click(next){ $(document.body).click(next) }
 				//var click = $(document.body).click
 
-				var log = new Action(function(v, next){
+				var log = Action(function(v, next){
 					console.log('-- %o', v)
 					next(v)
 				})
+				
 
-				var asyncReverse = new Action(function(v, next){
+				// konami code
+				// ↑↑↓↓←→ABA
+				var kode = [38, 38, 40, 40, 37, 39, 65, 66, 65],
+					Konami = Action(function(v, n){
+						alert('ET BIIIIIM')
+						n(v)
+					})
+
+				Reactive.on(key)
+					.map(function(evt){
+						return evt.keyCode
+					})
+					.sliding(kode.length)
+					.match(kode)
+					.await(Konami)
+					.subscribe()
+
+				/*
+				var asyncReverse = Action(function(v, next){
 					setTimeout(function(){
 						next(v.split("").reverse().join(""))
 					}, 100)
 				})
 				
-				var askServer = new Action(function(v, next){
+				var askServer = Action(function(v, next){
 					setTimeout(function(){ next('PONG') }, 100)
 					//$.get('http://localhost/', next)
 				})
 				
-				var wait5 = new Action(function(v, next){
+				var wait5 = Action(function(v, next){
 					setTimeout(function(){
 						next(v)
 					}, 500)
@@ -58,11 +77,11 @@
 						return v[0]
 					})
 
-				var time = new Action(function(v, next){
+				var time = Action(function(v, next){
 					next(new Date())
 				})
 
-				new Reactive()
+				Reactive
 					.on(click)
 					.await(reversedAskServer.zip(time))
 					.map(function(v){
@@ -70,9 +89,9 @@
 					})
 					.await(log)
 					.subscribe()
-
+				*/
 				/*
-				new Reactive()
+				Reactive
 					.on(click)
 					.map(function(e){return new Date()})
 					.sliding(2)
@@ -81,7 +100,7 @@
 				*/
 
 				/*
-				new Reactive()
+				Reactive
 					.on(click)
 					.map(function(e){return new Date()})
 					.group(4)
@@ -90,7 +109,7 @@
 				*/
 
 				/*	
-				new Reactive()
+				Reactive
 					.on(click)
 					.drop(2)
 					.foreach(function(v){
@@ -100,14 +119,14 @@
 				*/
 
 				/*
-				var r1 = new Reactive().on(key).map(function(evt){ return evt.keyCode }),
-					r2 = new Reactive().on(click).map(function(){ return 'click' }),
+				var r1 = Reactive.on(key).map(function(evt){ return evt.keyCode }),
+					r2 = Reactive.on(click).map(function(){ return 'click' }),
 					both = r1.zip(r2).foreach(function(e){ console.log(e) })
 				both.subscribe()
 				*/
 
 				/*
-				new Reactive()
+				Reactive
 					.on(key)
 					.map(function(evt){
 						return evt.keyCode
