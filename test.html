@@ -48,21 +48,25 @@
 						return evt.keyCode
 					})
 					.sliding(kode.length)
-					.match(kode)
-					.await(Konami)
+					.await(Matcher.array(kode, Konami))
 					.subscribe()
-				
-				
+					
+					
 				var onError = Action(function(v,n){
 					console.log("Putain t'as tout pete")
 					n(v)
 				})
-				var HttpMatcher = Match.test(function(r){
+
+				var HttpDispatcher = Match.test(function(r){
 						return r.status == 200
 					}, log)
 					.default(onError)
 					.action()
 
+				//	Http.OK()
+				//		.4XX()
+				//		.5XX()
+				//		.default()
 				Reactive.on(click)
 					.map(function(v){
 						return {
@@ -70,9 +74,9 @@
 							text: "p'tite caisse"
 						}
 					})
-					.await(HttpMatcher)
+					.await(HttpDispatcher)
 					.subscribe()
-
+					
 				/*
 				var asyncReverse = Action(function(v, next){
 					setTimeout(function(){
