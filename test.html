@@ -51,6 +51,27 @@
 					.match(kode)
 					.await(Konami)
 					.subscribe()
+				
+				
+				var onError = Action(function(v,n){
+					console.log("Putain t'as tout pete")
+					n(v)
+				})
+				var HttpMatcher = Match.test(function(r){
+						return r.status == 200
+					}, log)
+					.default(onError)
+					.action()
+
+				Reactive.on(click)
+					.map(function(v){
+						return {
+							status: 400,
+							text: "p'tite caisse"
+						}
+					})
+					.await(HttpMatcher)
+					.subscribe()
 
 				/*
 				var asyncReverse = Action(function(v, next){

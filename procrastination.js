@@ -299,7 +299,7 @@ var Action = function(act) {
 		var me = this
 		return new A(function(v, next){
 			me.onComplete(function (v2) {
-				ƒ.call(me, v2).onComplete(next).do()
+				ƒ.call(me, v2).onComplete(next).do(v2)
 			}).do(v)
 		}, noop)
 	}
@@ -481,6 +481,61 @@ var Reactive = (function() {
 		}
 	}
 })()
+
+var Match = (function(){
+	function M(ts, lambda, def){
+		this.predicates = ts || []
+		this.lambda = lambda || identity
+		this.def = def
+	}
+
+	var TODO = function(){
+		throw 'NotImplemented'
+	}
+
+	M.prototype.action = function(){
+		var u = Action(function(v, n){ n(v) }),
+			ac = this
+		return u.flatmap(function(v){
+			for(var i = 0; i < ac.predicates.length; i++){
+				var p = ac.predicates[i]
+				if(p.predicate(ac.lambda(v))){
+					return p.action
+				}
+			}
+			return ac.def
+		})
+	}
+
+	M.prototype.test = function(ƒ, a){
+		return new M(this.predicates.concat([{
+			predicate: ƒ,
+			action: a
+		}]))
+	}
+
+	M.prototype.value = TODO
+	M.prototype.array = TODO
+	M.prototype.regex = TODO
+	M.prototype.type = TODO
+
+	M.prototype.on = function(lambda){
+		var me = this
+		return new M(this.predicates.map(function(ƒ){
+			return function(v){
+				return ƒ(lambda(v))
+			}
+		}))
+	}
+
+	// TODO
+	M.prototype.default = function(def){
+		return new M(this.predicates, this.lambda, def)
+	}
+
+	return new M()
+})()
+
 
 // ============
 // = Examples =
