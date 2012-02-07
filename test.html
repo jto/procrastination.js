@@ -33,7 +33,6 @@
 					console.log('-- %o', v)
 					next(v)
 				})
-				
 
 				// konami code
 				// ↑↑↓↓←→ABA
@@ -48,18 +47,21 @@
 						return evt.keyCode
 					})
 					.sliding(kode.length)
-					.await(Matcher.array(kode, Konami))
+					.await(Match
+						.array(kode, Konami)
+						.action())
 					.subscribe()
-					
-					
+				
 				var onError = Action(function(v,n){
 					console.log("Putain t'as tout pete")
 					n(v)
 				})
 
-				var HttpDispatcher = Match.test(function(r){
-						return r.status == 200
-					}, log)
+				/*
+				var HttpDispatcher = Match.on(function(r){
+						return r.status
+					})
+					.value(200, log)
 					.default(onError)
 					.action()
 
@@ -70,13 +72,14 @@
 				Reactive.on(click)
 					.map(function(v){
 						return {
-							status: 400,
+							status: 200,
 							text: "p'tite caisse"
 						}
 					})
 					.await(HttpDispatcher)
 					.subscribe()
-					
+				*/
+
 				/*
 				var asyncReverse = Action(function(v, next){
 					setTimeout(function(){
@@ -114,15 +117,13 @@
 					})
 					.await(log)
 					.subscribe()
-				*/
-				/*
+
 				Reactive
 					.on(click)
 					.map(function(e){return new Date()})
 					.sliding(2)
 					.foreach(function(e){ console.log(e) })
 					.subscribe()
-				*/
 
 				/*
 				Reactive

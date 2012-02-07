@@ -336,7 +336,7 @@ var Match = (function(){
 	function M(ts, lambda, def){
 		this.predicates = ts || []
 		this.lambda = lambda || identity
-		this.def = def
+		this.def = def || Action() //returned valued if matched
 	}
 
 	M.prototype.action = function(){
@@ -357,24 +357,39 @@ var Match = (function(){
 		return new M(this.predicates.concat([{
 			predicate: ƒ,
 			action: a
-		}]))
+		}]), this.lambda, this.def)
 	}
 
 	var TODO = function(){
 		throw 'NotImplemented'
 	}
-	M.prototype.value = TODO
-	M.prototype.array = TODO
+
+	M.prototype.value = function(r, a){
+		return this.test(function(v){
+			return v === r
+		}, a)
+	}
+
+	M.prototype.array = function(as, a){
+		console.log(a)
+		return this.test(function(vs){
+			if(vs.length != as.length)
+				return false
+			for(var i = 0; i < vs.length; i++)
+				if(vs[i] !== as[i]) return false
+			return true
+		}, a)
+	}
+
 	M.prototype.regex = TODO
 	M.prototype.type = TODO
 
+	// THIS IS SPPPP... a map
 	M.prototype.on = function(lambda){
 		var me = this
-		return new M(this.predicates.map(function(ƒ){
-			return function(v){
-				return ƒ(lambda(v))
-			}
-		}))
+		return new M(this.predicates, function(v){
+			return lambda(me.lambda(v))
+		}, this.def)
 	}
 
 	M.prototype.default = function(def){
