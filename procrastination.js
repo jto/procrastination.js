@@ -237,7 +237,7 @@ var Reactive = (function() {
 			if(vs.length == s)
 				vs = vs.slice(1).concat(v)
 			else
-				vs.push(v)
+				vs = vs.concat(v)
 			return me.unit(vs)
 		})
 	}
