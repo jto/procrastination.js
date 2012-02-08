@@ -57,6 +57,27 @@
 					n(v)
 				})
 
+				// Routeur
+				var routeChanged = function(next){ window.addEventListener('hashchange', next) },
+					loutre = Action(function(v, n){
+						console.log('LOUTRE LOUTRE LOUTRE')
+						n(v)
+					}),
+					aie = Action(function(v, n){
+						console.warn('mais non')
+						n(v)
+					}),
+					Route = Match.value('loutre', loutre)
+							.default(aie)
+							.action()
+
+				Reactive.on(routeChanged)
+					.map(function(evt){
+						return evt.newURL.split('#')[1]
+					})
+					.await(Route)
+					.subscribe()
+
 				/*
 				var HttpDispatcher = Match.on(function(r){
 						return r.status

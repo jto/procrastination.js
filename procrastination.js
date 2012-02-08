@@ -371,7 +371,6 @@ var Match = (function(){
 	}
 
 	M.prototype.array = function(as, a){
-		console.log(a)
 		return this.test(function(vs){
 			if(vs.length != as.length)
 				return false
@@ -381,7 +380,11 @@ var Match = (function(){
 		}, a)
 	}
 
-	M.prototype.regex = TODO
+	M.prototype.regex = function(reg, a){
+		return this.test(function(v){
+			return reg.test(v)
+		}, a)
+	}
 	M.prototype.type = TODO
 
 	// THIS IS SPPPP... a map
