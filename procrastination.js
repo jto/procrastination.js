@@ -1,4 +1,10 @@
 /**
+ * # Procrastinate.js
+ *
+ * Procrastinate.js is a : foo
+ */
+
+/**
 * Copyright Julien Tournay
 *
 * LICENCE
@@ -12,9 +18,24 @@
 *                  ||     ||
 */
 
+
+// ## Helper functions
+
+/**
+ * Identity returns what you give him in parameter
+ * @parameter
+ *   a - What you want me to return you
+ * @return
+ *   What you have given me as parameter
+ */
 function identity(a){ return a }
+
+/**
+ * Noop does nothing
+ */
 function noop(){}
 
+// ## M
 var M = (function(){	
 	function M(){}
 	M.fn = {}
@@ -117,6 +138,8 @@ var M = (function(){
 	return M
 })()
 
+// ## Action
+// Actions are triggered on events and may be chained
 var Action = function(act) {
 	function A(ƒ, c) {
 		this.ƒ = ƒ || identity
@@ -124,7 +147,7 @@ var Action = function(act) {
 	}
 
 	A.prototype = M.clone()
-	
+
 	A.Empty = new A()
 	A.prototype.zero = function(){ return A.Empty }
 	A.prototype.unit = function(v){
@@ -154,9 +177,45 @@ var Action = function(act) {
 		}, noop)
 	}
 
-	// A.prototype.fold = function(ƒ, i){ throw "You must override the fold method" }
-	// A.prototype.append = function(){ throw "You must override the append method" }
+	/*
+	A.prototype.fold = function(ƒ, i){ throw "You must override the fold method" }
+	A.prototype.append = function(){ throw "You must override the append method" }
+	 */
 
+// ### Action composition
+// You may compose actions using different methods:
+//
+//   - add another action to execute after completion
+//     Consider following actions:
+//     <pre>
+//     var log = Action(function(event, next) {
+//       console.log(event)
+//       next(event)
+//     })
+//     var doRealStuff = Action(function(event, next) {
+//       //do real stuff
+//       doRealStuff(event)
+//       next(event)
+//     })
+//     </pre>
+//
+//     You may want to compose something like:
+//     <pre>
+//     var logThenDoStuffAction = log.then(doRealStuff)
+//     </pre>
+//     or 
+//     <pre>
+//     var thenDoStuffThenLogAction = doRealStuff.then(log)
+//     </pre>
+//
+//   - Ok this is cool, but sometimes you want to do two concurrent things with
+//     the same event, just as you did with javascript events and callbacks !
+//
+//     then do something like:
+//     <pre>
+//     var doStuffAndLogInTheSameTime = doRealStuff.and(log)
+//     </pre>
+//
 	A.prototype.then = function(a){
 		var me = this
 		return new A(function(v, next){
@@ -193,6 +252,9 @@ var Action = function(act) {
 	return new A(act)
 }
 
+
+// ## Reactive
+// Reactive are entry points where you route events from
 var Reactive = (function() {
 	function R(source, lambda) {
 		this.lambda = lambda || identity
