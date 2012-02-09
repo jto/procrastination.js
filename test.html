@@ -34,6 +34,11 @@
 					next(v)
 				})
 
+				var aa = Reactive.on(key),
+				    ab = Reactive.on(mousemove)
+
+				aa.merge(ab).await(log).subscribe()
+
 				// konami code
 				// ↑↑↓↓←→←→BA
 				var kode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65],
