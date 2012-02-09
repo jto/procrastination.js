@@ -223,11 +223,9 @@ var Reactive = (function() {
 	*/
 	R.prototype.merge = function(ot) {
 		var me = this
-		return new R({
-			call: function (f, l){
-				me.source(me.lambda(l))
-				ot.source(ot.lambda(l))
-			}
+		return new R(function(l) {
+			me.source(me.lambda(l))
+			ot.source(ot.lambda(l))
 		}, identity)
 	}
 
