@@ -268,6 +268,13 @@ var Reactive = (function() {
 		return new R(function(n){ return n(v) })
 	}
 
+	/**
+	 * Get back a reactive listener on a specific event
+	 * @param
+	 *   The event you want a reactive from
+	 * @return
+	 *   The reactive you expect
+	 */
 	R.prototype.on = function(s) {
 		var me = this
 		return new R(function (next){
@@ -306,7 +313,14 @@ var Reactive = (function() {
 			}
 		})
 	}
-	
+
+	/**
+	 * Get events from a reactive groups by N elements
+	 * @param
+	 * s How long you want groups to be
+	 * @return
+	 * The reactive giving elements by groups
+	 */
 	R.prototype.sliding = function(s) {
 		var vs = [],
 			me = this
@@ -318,7 +332,14 @@ var Reactive = (function() {
 			return me.unit(vs)
 		})
 	}
-	
+
+	/**
+	 * Drop first N elements from a reactive then listen for events from it
+	 * @params
+	 * n The number of elements you want to drop
+	 * @return
+	 * The reactive dropping N first elements
+	 */
 	R.prototype.drop = function(n) {
 		var s = this.source
 		return new R(function(next){
@@ -328,7 +349,7 @@ var Reactive = (function() {
 			})
 		}, this.lambda)
 	}
-		
+
 	// TODO: add a dispose method
 	R.prototype.subscribe = function() {
 		//this.source(this.lambda)
@@ -350,6 +371,13 @@ var Reactive = (function() {
 		})
 	}
 
+	/**
+	 * Add an Action you want to be called when events are triggered
+	 * @param
+	 * a Action you want to be called on events
+	 * @return
+	 * The new reactive calling action
+	 */
 	R.prototype.await = function(a){
 		var me = this
 		return new R(function(next){
@@ -358,7 +386,7 @@ var Reactive = (function() {
 			})
 		})
 	}
-	
+
 	R.prototype.zip = function(r){
 		var src = this.source,
 			lmbd = this.lambda
@@ -379,9 +407,25 @@ var Reactive = (function() {
 		throw "TODO"
 	}
 
+	/**
+	 * Returns an empty reactive
+	 * May be used to stop processing a reactive
+	 * @return
+	 * An new empty Reactive
+	 */
 	R.prototype.zero = function(){ return R.Empty },
+
 	R.prototype.append = function(){ throw "TODO" },
 
+	/**
+	 * Basic foreach
+	 * When reactive is subscribe function will be called for each event reaching 
+	 * this reactive
+	 * @param
+	 * ƒ the callback you want to be called
+	 * @return
+	 * A new reactive calling your callback
+	 */ 
 	R.prototype.foreach = function(ƒ){
 		var me = this
 		return new R(this.source, 
@@ -391,7 +435,7 @@ var Reactive = (function() {
 				return v
 			})
 	}
-	
+
 	R.prototype.match = function(c){
 		return this.filter(function(v){
 			if(v.length != c.length)
@@ -409,6 +453,7 @@ var Reactive = (function() {
 	}
 })()
 
+// ## Matchers
 var Match = (function(){
 	function M(ts, lambda, def){
 		this.predicates = ts || []
