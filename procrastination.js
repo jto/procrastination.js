@@ -401,3 +401,5 @@ var Match = (function(){
 
 	return new M()
 })()
+
+// vim: noexpandtab ts=2 sw=2:
