@@ -213,7 +213,22 @@ var Reactive = (function() {
 			s(next)
 		}, this.lambda)
 	}
-	
+
+	/**
+	Merges two reactive
+	@param
+	 r another reactive
+	@return
+	 another reactive with both merged
+	*/
+	R.prototype.merge = function(ot) {
+		var me = this
+		return new R(function(l) {
+			me.source(me.lambda(l))
+			ot.source(ot.lambda(l))
+		}, identity)
+	}
+
 	R.prototype.group = function(i) {
 		var vs = [],
 			me = this
@@ -276,7 +291,7 @@ var Reactive = (function() {
 	R.prototype.await = function(a){
 		var me = this
 		return new R(function(next){
-			me.source(function(v){
+			me.source.call(this, function(v){
 				a.onComplete(next).do(v)
 			})
 		})
@@ -401,3 +416,5 @@ var Match = (function(){
 
 	return new M()
 })()
+
+// vim: noexpandtab ts=2 sw=2:
