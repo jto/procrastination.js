@@ -184,38 +184,33 @@ var Action = function(act) {
 
 // ### Action composition
 // You may compose actions using different methods:
+
+
+// #### Action chaining
+// add another action to execute after completion
+// Consider following actions:
+// <pre>
+// var log = Action(function(event, next) {
+//   console.log(event)
+//   next(event)
+// })
+// var doRealStuff = Action(function(event, next) {
+//   //do real stuff
+//   doRealStuff(event)
+//   next(event)
+// })
+// </pre>
 //
-//   - add another action to execute after completion
-//     Consider following actions:
-//     <pre>
-//     var log = Action(function(event, next) {
-//       console.log(event)
-//       next(event)
-//     })
-//     var doRealStuff = Action(function(event, next) {
-//       //do real stuff
-//       doRealStuff(event)
-//       next(event)
-//     })
-//     </pre>
+// You may want to compose something like:
+// <pre>
+// var logThenDoStuffAction = log.then(doRealStuff)
+// </pre>
+// or 
+// <pre>
+// var thenDoStuffThenLogAction = doRealStuff.then(log)
+// </pre>
 //
-//     You may want to compose something like:
-//     <pre>
-//     var logThenDoStuffAction = log.then(doRealStuff)
-//     </pre>
-//     or 
-//     <pre>
-//     var thenDoStuffThenLogAction = doRealStuff.then(log)
-//     </pre>
-//
-//   - Ok this is cool, but sometimes you want to do two concurrent things with
-//     the same event, just as you did with javascript events and callbacks !
-//
-//     then do something like:
-//     <pre>
-//     var doStuffAndLogInTheSameTime = doRealStuff.and(log)
-//     </pre>
-//
+
 	A.prototype.then = function(a){
 		var me = this
 		return new A(function(v, next){
@@ -224,6 +219,15 @@ var Action = function(act) {
 			}).do(v)
 		}, a.complete)
 	}
+
+// #### Simultaneous Actions
+// Ok this is cool, but sometimes you want to do two concurrent things with
+// the same event, just as you did with javascript events and callbacks !
+//
+// then do something like:
+// <pre>
+// var doStuffAndLogInTheSameTime = doRealStuff.and(log)
+// </pre>
 
 	A.prototype.and = function(a){
 		var me = this
@@ -241,14 +245,38 @@ var Action = function(act) {
 			a.onComplete(sync(1)).do(v)
 		}, noop)
 	}
-	
-	A.prototype.wrap = function(a, b){
+
+	A.prototype.zip = A.prototype.and
+
+// #### A step forward
+// You may even combine them
+// <pre>
+// var displayStuff = Action(function(event, next) {
+//   $('body').append(event)
+//   next(event)
+// })
+// </pre>
+//
+// then you may want after having logged and processed stuff, use those
+// actions and have another one synchronized:
+// <pre>
+// var wholeAction = doRealStuff.and(log).then(displayStuff)
+// </pre>
+//
+// Note: You will see displayStuff gets an array of event, on element for
+// each elements of parent branches
+//
+// You may want the diet version of Action.and.then:
+// <pre>
+// var wholeAction = doRealStuff.wrap(log, displayStuff)
+// </pre>
+//	A.prototype.wrap = function(a, b){
 		return this.and(a)
 			.then(b)
 	}
-	
-	A.prototype.zip = A.prototype.and
 
+
+// 
 	return new A(act)
 }
 
