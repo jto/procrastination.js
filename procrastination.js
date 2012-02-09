@@ -270,7 +270,8 @@ var Action = function(act) {
 // <pre>
 // var wholeAction = doRealStuff.wrap(log, displayStuff)
 // </pre>
-//	A.prototype.wrap = function(a, b){
+
+	A.prototype.wrap = function(a, b){
 		return this.and(a)
 			.then(b)
 	}
