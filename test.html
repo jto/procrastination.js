@@ -33,6 +33,14 @@
 					console.log('-- %o', v)
 					next(v)
 				})
+				
+				var r3 = Reactive
+					.on(key)
+					.group(3)
+					.await(log)
+				
+				r3.subscribe()
+				r3.subscribe()
 
 				var aa = Reactive.on(key),
 				    ab = Reactive.on(mousemove)
@@ -48,6 +56,7 @@
 					})
 
 				Reactive.on(key)
+				.on(click)
 					.map(function(evt){
 						return evt.keyCode
 					})
