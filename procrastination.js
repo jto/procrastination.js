@@ -276,7 +276,6 @@ var Action = function(act) {
 			.then(b)
 	}
 
-
 // 
 	return new A(act)
 }
@@ -484,11 +483,7 @@ var Reactive = (function() {
 		return this.await(m.action())
 	}
 		
-	return {
-		on: function(s){
-			return new R(s)
-		}
-	}
+	return new R()
 })()
 
 // ## Matchers
