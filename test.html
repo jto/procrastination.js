@@ -12,18 +12,7 @@
 		<script src="procrastination.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(function(){
-				/*
-				s = Procrastination($('p'))
-					.each(function(e){ $(e).append(" World!") })
-					.each(function(e){ $(e).append(" " + new Date()) })
-					.attr("class")
-					.each(function(e){console.log(e)})
-
-				setInterval(function(){
-					$(document.body).append('<p class="blah">Hello</p>')
-				}, 2000)
-				*/
-
+				
 				function mousemove(next){ $(document.body).mousemove(next) }
 				function key(next){ $(document.body).keydown(next) }
 				function click(next){ $(document.body).click(next) }
@@ -33,7 +22,18 @@
 					console.log('-- %o', v)
 					next(v)
 				})
-				
+
+				Reactive.on(key)
+					.map(function(evt){
+						return evt.keyCode
+					})
+					.until(function(v){
+						return v == 13
+					})
+					.await(log)
+					.subscribe()
+
+				/*
 				var r3 = Reactive
 					.on(key)
 					.group(3)
@@ -46,7 +46,9 @@
 				    ab = Reactive.on(mousemove)
 
 				aa.merge(ab).await(log).subscribe()
+				*/
 
+				/*
 				// konami code
 				// ↑↑↓↓←→←→BA
 				var kode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65],
@@ -70,7 +72,9 @@
 					console.log("Putain t'as tout pete")
 					n(v)
 				})
+				*/
 
+				/*
 				// Routeur
 				var routeChanged = function(next){ window.addEventListener('hashchange', next) },
 					loutre = Action(function(v, n){
@@ -91,6 +95,7 @@
 					})
 					.await(Route)
 					.subscribe()
+				*/
 
 				/*
 				var HttpDispatcher = Match.on(function(r){

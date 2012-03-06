@@ -362,6 +362,21 @@ var Reactive = (function() {
 		})
 	}
 
+	R.prototype.until = function(p) {
+		var vs = [],
+			me = this
+		return this.flatmap(function(v){
+			vs = vs.concat(v)
+			if(p(v)){
+				r = me.unit(vs)
+				vs = []
+				return r
+			}
+			else
+				return R.Empty
+		})
+	}
+
 	/**
 	 * Drop first N elements from a reactive then listen for events from it
 	 * @params
