@@ -74,7 +74,7 @@
 				})
 				*/
 
-				/*
+				
 				// Routeur
 				var routeChanged = function(next){ window.addEventListener('hashchange', next) },
 					loutre = Action(function(v, n){
@@ -87,15 +87,13 @@
 					}),
 					Route = Match.value('loutre', loutre)
 							.default(aie)
-							.action()
 
 				Reactive.on(routeChanged)
 					.map(function(evt){
 						return evt.newURL.split('#')[1]
 					})
-					.await(Route)
+					.match(Route)
 					.subscribe()
-				*/
 
 				/*
 				var HttpDispatcher = Match.on(function(r){

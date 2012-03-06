@@ -480,14 +480,8 @@ var Reactive = (function() {
 			})
 	}
 
-	R.prototype.match = function(c){
-		return this.filter(function(v){
-			if(v.length != c.length)
-				return false
-			for(var i = 0; i < v.length; i++)
-				if(v[i] !== c[i]) return false
-			return true
-		})
+	R.prototype.match = function(m){
+		return this.await(m.action())
 	}
 		
 	return {
