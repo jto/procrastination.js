@@ -94,37 +94,28 @@
 					})
 					.match(Route)
 					.subscribe()
-				
-
-				Http = (function(){
-					function H(ts, lambda, def){
-						this.predicates = ts || []
-						this.lambda = lambda || identity
-						this.def = def || Action() //returned valued if matched
-					}
-
-					H.prototype = Match
-
-					H.prototype.constructor = H
-
-					H.prototype.OK = function(a){
-						return this.value(200, a)
-					}
-
-					H.prototype.ERROR = function(a){
-						return this.test(function(v){
-							return 200 != v
-						}, a)
-					}
-
-					return new H().on(function(r){return r.status})
-				})()
-
 
 				var onError = Action(function(v,n){
 					console.log("Putain t'as tout pete")
 					n(v)
 				})
+
+				Http = (function(){
+					function H(){ Match.constructor.apply(this, arguments) }
+					H.prototype = Match
+					H.prototype.new = H
+					H.prototype.OK = function(a){
+						return this.value(200, a)
+					}
+					H.prototype.ERROR = function(a){
+						return this.test(function(v){
+							return v != 200
+						}, a)
+					}
+					return new H().on(function(r){
+						return r.status
+					})
+				}())
 
 				//	Http.OK()
 				//		.4XX()
@@ -133,7 +124,7 @@
 				Reactive.on(click)
 					.map(function(v){
 						return {
-							status: 200,
+							status: 300,
 							text: "p'tite caisse"
 						}
 					})
