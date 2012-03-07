@@ -36,7 +36,7 @@ function identity(a){ return a }
 function noop(){}
 
 // ## M
-var M = (function(){	
+var M = (function(){	// TODO: scope
 	function M(){}
 	M.fn = {}
 
@@ -281,6 +281,8 @@ var Action = function(act) {
 }
 
 
+// TODO: maybe events should be composable like Action
+// -- var swipe = touchstart.then(touchmove).then(touchend)
 // ## Reactive
 // Reactive are entry points where you route events from
 var Reactive = (function() {
@@ -494,6 +496,8 @@ var Match = (function(){
 		this.def = def || Action() //returned valued if matched
 	}
 
+	M.prototype.constructor = M
+
 	M.prototype.action = function(){
 		var u = Action(function(v, n){ n(v) }),
 			ac = this
@@ -509,7 +513,7 @@ var Match = (function(){
 	}
 
 	M.prototype.test = function(ƒ, a){
-		return new M(this.predicates.concat([{
+		return new this.__proto__.constructor(this.predicates.concat([{
 			predicate: ƒ,
 			action: a
 		}]), this.lambda, this.def)
@@ -542,16 +546,16 @@ var Match = (function(){
 	}
 	M.prototype.type = TODO
 
-	// THIS IS SPPPP... a map
+	// THIS IS SPPPP... a map, almost
 	M.prototype.on = function(lambda){
 		var me = this
-		return new M(this.predicates, function(v){
+		return new this.__proto__.constructor(this.predicates, function(v){
 			return lambda(me.lambda(v))
 		}, this.def)
 	}
 
 	M.prototype.default = function(def){
-		return new M(this.predicates, this.lambda, def)
+		return new this.__proto__.constructor( this.predicates, this.lambda, def)
 	}
 
 	return new M()

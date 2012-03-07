@@ -12,17 +12,20 @@
 		<script src="procrastination.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(function(){
-				
+
+				// TODO: exemple action TOUUUTOUUUDOUUUUDOUUU TOUUUTOUUUUTOUUUUTOUUUUU
+
 				function mousemove(next){ $(document.body).mousemove(next) }
 				function key(next){ $(document.body).keydown(next) }
 				function click(next){ $(document.body).click(next) }
 				// var click = $(document.body).click
 
-				var log = Action(function(v, next){
+				log = Action(function(v, next){
 					console.log('-- %o', v)
 					next(v)
 				})
 
+				/*
 				Reactive.on(key)
 					.map(function(evt){
 						return evt.keyCode
@@ -32,6 +35,7 @@
 					})
 					.await(log)
 					.subscribe()
+				*/
 
 				/*
 				var r3 = Reactive
@@ -67,11 +71,7 @@
 						.array(kode, Konami)
 						.action())
 					.subscribe()
-				
-				var onError = Action(function(v,n){
-					console.log("Putain t'as tout pete")
-					n(v)
-				})
+
 				*/
 
 				
@@ -94,14 +94,37 @@
 					})
 					.match(Route)
 					.subscribe()
+				
 
-				/*
-				var HttpDispatcher = Match.on(function(r){
-						return r.status
-					})
-					.value(200, log)
-					.default(onError)
-					.action()
+				Http = (function(){
+					function H(ts, lambda, def){
+						this.predicates = ts || []
+						this.lambda = lambda || identity
+						this.def = def || Action() //returned valued if matched
+					}
+
+					H.prototype = Match
+
+					H.prototype.constructor = H
+
+					H.prototype.OK = function(a){
+						return this.value(200, a)
+					}
+
+					H.prototype.ERROR = function(a){
+						return this.test(function(v){
+							return 200 != v
+						}, a)
+					}
+
+					return new H().on(function(r){return r.status})
+				})()
+
+
+				var onError = Action(function(v,n){
+					console.log("Putain t'as tout pete")
+					n(v)
+				})
 
 				//	Http.OK()
 				//		.4XX()
@@ -114,9 +137,11 @@
 							text: "p'tite caisse"
 						}
 					})
-					.await(HttpDispatcher)
+					.match(
+						Http.OK(log)
+							.ERROR(onError))
 					.subscribe()
-				*/
+
 
 				/*
 				var asyncReverse = Action(function(v, next){
