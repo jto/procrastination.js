@@ -513,7 +513,7 @@ var Match = (function(){
 	}
 
 	M.prototype.test = function(ƒ, a){
-		return new this.__proto__.new(this.predicates.concat([{
+		return new M(this.predicates.concat([{
 			predicate: ƒ,
 			action: a
 		}]), this.lambda, this.def)
@@ -549,13 +549,13 @@ var Match = (function(){
 	// THIS IS SPPPP... a map, almost
 	M.prototype.on = function(lambda){
 		var me = this
-		return new this.__proto__.new(this.predicates, function(v){
+		return new M(this.predicates, function(v){
 			return lambda(me.lambda(v))
 		}, this.def)
 	}
 
 	M.prototype.default = function(def){
-		return new this.__proto__.new(this.predicates, this.lambda, def)
+		return new M(this.predicates, this.lambda, def)
 	}
 
 	return new M()

@@ -100,23 +100,7 @@
 					n(v)
 				})
 
-				Http = (function(){
-					function H(){ Match.constructor.apply(this, arguments) }
-					H.prototype = Match
-					H.prototype.new = H
-					H.prototype.OK = function(a){
-						return this.value(200, a)
-					}
-					H.prototype.ERROR = function(a){
-						return this.test(function(v){
-							return v != 200
-						}, a)
-					}
-					return new H().on(function(r){
-						return r.status
-					})
-				}())
-
+				// TODO: ?
 				//	Http.OK()
 				//		.4XX()
 				//		.5XX()
@@ -124,13 +108,17 @@
 				Reactive.on(click)
 					.map(function(v){
 						return {
-							status: 300,
+							status: 200,
 							text: "p'tite caisse"
 						}
 					})
 					.match(
-						Http.OK(log)
-							.ERROR(onError))
+						Match
+							.on(function(r){
+								return r.status
+							})
+							.value(200, log)
+							.default(onError))
 					.subscribe()
 
 
