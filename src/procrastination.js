@@ -496,7 +496,7 @@ var Match = (function(){
 		this.def = def || Action() //returned valued if matched
 	}
 
-	M.prototype._new = M
+	M.prototype.new = M
 
 	M.prototype.action = function(){
 		var u = Action(function(v, n){ n(v) }),
@@ -513,7 +513,7 @@ var Match = (function(){
 	}
 
 	M.prototype.test = function(ƒ, a){
-		return new this._new(this.predicates.concat([{
+		return new M(this.predicates.concat([{
 			predicate: ƒ,
 			action: a
 		}]), this.lambda, this.def)
@@ -549,24 +549,13 @@ var Match = (function(){
 	// THIS IS SPPPP... a map, almost
 	M.prototype.on = function(lambda){
 		var me = this
-		return new this._new(this.predicates, function(v){
+		return new M(this.predicates, function(v){
 			return lambda(me.lambda(v))
 		}, this.def)
 	}
 
 	M.prototype.default = function(def){
-		return new this._new(this.predicates, this.lambda, def)
-	}
-	
-	M.prototype.specialized = function(obj){
-		function S(){
-			this.constructor.apply(this, arguments)
-		}
-		S.prototype = new M()
-		S.prototype._new = S
-		for(var k in obj)
-			S.prototype[k] = obj[k]
-		return new S()
+		return new M(this.predicates, this.lambda, def)
 	}
 
 	return new M()

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Demo procrastination</title>
+		<style type="text/css" media="screen">
+			html, body{
+				height: 100%;
+				width: 100%;
+			}
+		</style>
+		<script src="lib/zepto.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript" charset="utf-8">
+			$(function(){
+
+				// DEMOS:
+				//	Simple game (Matchers on key values + konami code)
+				//	example Action TOUUUTOUUUDOUUUUDOUUU TOUUUTOUUUUTOUUUUTOUUUUU
+				//	slider nav keyboard / mouse
+				//	zanimo
+				//	Paralax effect ?
+				//	Simple reusable widget
+
+				// TODOS:
+				//	Fix sdr bug
+				//	Find a way to create specialized Matchers
+				//	Dispose method
+				//	Reactives chaining
+
+				function mousemove(next){ $(document.body).mousemove(next) }
+				function key(next){ $(document.body).keydown(next) }
+				function click(next){ $(document.body).click(next) }
+				// var click = $(document.body).click
+
+				log = Action(function(v, next){
+					console.log('-- %o', v)
+					next(v)
+				})
+
+				/*
+				Reactive.on(key)
+					.map(function(evt){
+						return evt.keyCode
+					})
+					.until(function(v){
+						return v == 13
+					})
+					.await(log)
+					.subscribe()
+				*/
+
+				/*
+				var r3 = Reactive
+					.on(key)
+					.group(3)
+					.await(log)
+				
+				r3.subscribe()
+				r3.subscribe()
+
+				var aa = Reactive.on(key),
+				    ab = Reactive.on(mousemove)
+
+				aa.merge(ab).await(log).subscribe()
+				*/
+
+				/*
+				// konami code
+				// ↑↑↓↓←→←→BA
+				var kode = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65],
+					Konami = Action(function(v, n){
+						alert('ET BIIIIIM')
+						n(v)
+					})
+
+				Reactive.on(key)
+				.on(click)
+					.map(function(evt){
+						return evt.keyCode
+					})
+					.sliding(kode.length)
+					.await(Match
+						.array(kode, Konami)
+						.action())
+					.subscribe()
+
+				*/
+
+				
+				// Routeur
+				var routeChanged = function(next){ window.addEventListener('hashchange', next) },
+					loutre = Action(function(v, n){
+						console.log('LOUTRE LOUTRE LOUTRE')
+						n(v)
+					}),
+					aie = Action(function(v, n){
+						console.warn('mais non')
+						n(v)
+					}),
+					Route = Match.value('loutre', loutre)
+							.default(aie)
+
+				Reactive.on(routeChanged)
+					.map(function(evt){
+						return evt.newURL.split('#')[1]
+					})
+					.match(Route)
+					.subscribe()
+
+				var onError = Action(function(v,n){
+					console.log("Putain t'as tout pete")
+					n(v)
+				})
+
+				//	TODO: ?
+				//	Http.OK()
+				//		.4XX()
+				//		.5XX()
+				//		.default()
+				Reactive.on(click)
+					.map(function(v){
+						return {
+							status: 200,
+							text: "p'tite caisse"
+						}
+					})
+					.match(
+						Match
+							.on(function(r){
+								return r.status
+							})
+							.value(200, log)
+							.default(onError))
+					.subscribe()
+
+
+				/*
+				var asyncReverse = Action(function(v, next){
+					setTimeout(function(){
+						next(v.split("").reverse().join(""))
+					}, 100)
+				})
+				
+				var askServer = Action(function(v, next){
+					setTimeout(function(){ next('PONG') }, 100)
+					//$.get('http://localhost/', next)
+				})
+				
+				var wait5 = Action(function(v, next){
+					setTimeout(function(){
+						next(v)
+					}, 500)
+				})
+				
+				var reversedAskServer = askServer
+					.then(asyncReverse)
+					.and(wait5)
+					.map(function(v){
+						return v[0]
+					})
+
+				var time = Action(function(v, next){
+					next(new Date())
+				})
+
+				Reactive
+					.on(click)
+					.await(reversedAskServer.zip(time))
+					.map(function(v){
+						return "I'll do it later... " + v
+					})
+					.await(log)
+					.subscribe()
+
+				Reactive
+					.on(click)
+					.map(function(e){return new Date()})
+					.sliding(2)
+					.foreach(function(e){ console.log(e) })
+					.subscribe()
+
+				/*
+				Reactive
+					.on(click)
+					.map(function(e){return new Date()})
+					.group(4)
+					.foreach(function(e){ console.log(e) })
+					.subscribe()
+				*/
+
+				/*	
+				Reactive
+					.on(click)
+					.drop(2)
+					.foreach(function(v){
+						console.log("3+ click: %o", v)
+					})
+					.subscribe()
+				*/
+
+				/*
+				var r1 = Reactive.on(key).map(function(evt){ return evt.keyCode }),
+					r2 = Reactive.on(click).map(function(){ return 'click' }),
+					both = r1.zip(r2).foreach(function(e){ console.log(e) })
+				both.subscribe()
+				*/
+
+				/*
+				Reactive
+					.on(key)
+					.map(function(evt){
+						return evt.keyCode
+					})
+					.filter(function(code){
+						return code == 65
+					})
+					.foreach(function(v){
+						console.log("keypress: %o", v)
+					})
+					.subscribe()
+				*/
+			})
+		</script>
+	</head>
+	<body>
+		<p class="demo">
+			Hello
+		</p>
+	</body>
+</html>
