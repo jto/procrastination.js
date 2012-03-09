@@ -9,7 +9,7 @@
 			}
 		</style>
 		<script src="lib/zepto.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(function(){
 
@@ -112,6 +112,11 @@
 					n(v)
 				})
 
+				Http = Match.specialized({
+					OK: function(a){ return this.value(200, a) },
+					ERROR: function(a){ return this.value(500, a) }
+				}).on(function(r){ return r.status })
+
 				//	TODO: ?
 				//	Http.OK()
 				//		.4XX()
@@ -120,17 +125,13 @@
 				Reactive.on(click)
 					.map(function(v){
 						return {
-							status: 200,
+							status: 500,
 							text: "p'tite caisse"
 						}
 					})
 					.match(
-						Match
-							.on(function(r){
-								return r.status
-							})
-							.value(200, log)
-							.default(onError))
+						Http.OK(log)
+							.ERROR(onError))
 					.subscribe()
 
 
