@@ -112,7 +112,7 @@
 					n(v)
 				})
 
-				Http = Match.specialized({
+				var Http = Match.specialized({
 					OK: function(a){ return this.value(200, a) },
 					ERROR: function(a){ return this.value(500, a) }
 				}).on(function(r){ return r.status })

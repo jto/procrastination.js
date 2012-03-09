@@ -63,7 +63,7 @@ table {
 
 			.main {
 				height: 100%;
-				width: 2400px;
+				width: 4000px;
 				border: solid 1px red;
 				-webkit-transition: -webkit-transform 1s ease;
 			}
@@ -109,15 +109,27 @@ table {
 		<link href="lib/prettify.css" type="text/css" rel="stylesheet" />
 		<link href="style/color-theme.css" type="text/css" rel="stylesheet" />
 		<script type="text/javascript" src="lib/prettify.js"></script>
+		<script type="text/javascript" src="lib/mustache.js"></script>
 		<script type="text/javascript" src="lib/zepto.js"></script>
 		<script src="../../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(function(){
 
+				function show(v){ $('.console').prepend($('<li>').text(v)) }
+
+				var pageTmpl = $('#page-tmpl').text();
+				$('[type="text/example"]')
+					.map(function(n, e){
+						return $(e).text()
+					})
+					.map(function(code,n){
+						return Mustache.render(pageTmpl, {code: code, n: n})
+					})
+					.forEach(function(c){
+						$(c).appendTo(".main")
+					})
+
 				prettyPrint()
-				function show(v){
-					$('.console').prepend($('<li>').text(v))
-				}
 
 				var C = {
 					slideWidth: 800,
@@ -187,17 +199,11 @@ table {
 					.await(Goto)
 					.subscribe()
 
-					
-					
 			})
 		</script>
-	</head>
-	<body>
-		<div class="main">
-			<section>
-				<div class="content">
-					<div class="left">
-						<pre class="prettyprint" id="ex1">
+
+		<!-- Examples -->
+		<script type="text/example">
 		function tick(next){
 			setInterval(function(){
 				next(new Date())
@@ -209,27 +215,191 @@ table {
 				show(v)
 			})
 			.subscribe()
+		</script>
 
-						</pre>
-						<button class="run" data-code="#ex1">run</button>
-					</div>
-					<div class="right">
-						<ul class="console"></ul>
-					</div>
-				</div>
-				<nav>
-					<a href="#1" class="goto next">➤</a>
-					<a href="#0" class="goto prev">⇚</a>
-				</nav>
-			</section>
+		<script type="text/example">
+		function key(next){
+			$(document.body).keydown(next)
+		}
 
-			<section>
-				PAF
-				<nav>
-					<a href="#2" class="goto next">➤</a>
-					<a href="#0" class="goto prev">⇚</a>
-				</nav>
-			</section>
+		Reactive.on(key)
+			.foreach(function(evt){
+				show(evt.keyCode)
+			})
+			.subscribe()
+		</script>
+
+		<script type="text/example">
+		function key(next){
+			$(document.body).keydown(next)
+		}
+
+		Reactive.on(key)
+			.map(function(evt){
+				return evt.keyCode
+			})
+			.foreach(function(code){
+				show(code)
+			})
+			.subscribe()
+		</script>
+
+		<script type="text/example">
+		function key(next){
+			$(document.body).keydown(next)
+		}
+
+		Reactive.on(key)
+			.map(function(evt){
+				return evt.keyCode
+			})
+			.filter(function(code){
+				return code == 13
+			})
+			.foreach(function(code){
+				show(code)
+			})
+			.subscribe()
+		</script>
+
+		<script type="text/example">
+		function key(next){
+			$(document.body).keydown(next)
+		}
+
+		Reactive.on(key)
+			.map(function(evt){
+				return evt.keyCode
+			})
+			.until(function(code){
+				return code == 13
+			})
+			.foreach(function(letters){
+				show(letters)
+			})
+			.subscribe()
+		</script>
+
+		<!-- Actions -->
+		<!-- Custom actions -->
+		<script type="text/example">
+		function click(next){ $('#go').keydown(next) }
+
+		var GetFoo = Action(function(v, n){
+			$.get('/toto', n)
+		})
+
+		Reactive.on(click)
+			.await(GetFoo)
+			.subscribe()
+		</script>
+
+		<script type="text/example">
+		Reactive.on(click)
+			.await(GetFoo
+				.then(Log))
+			.subscribe()
+		</script>
+
+		<script type="text/example">
+		var Http = {
+			get: function(url){
+				return Action(function(v, n){
+					$.get(url, n)
+				})
+			}
+		}
+
+		var Spinner = {
+			_el: $('.spinner')
+			show: Action(function(v, n){
+				Spinner._el.show()
+				n(v)
+			}),
+			hide: Action(function(v, n){
+				Spinner._el.hide()
+				n(v)
+			})
+		}
+
+		Reactive.on(click)
+			.await(Http.get('/toto'))
+				.and(Spinner.show)
+				.then(Log)
+				.then(Spinner.hide))
+			.subscribe()
+		</script>
+
+		<script type="text/example">
+		var Error = Action(function(v, n){
+			show('OH NOOOOOOO')
+			n(v)
+		})
+
+		Reactive.on(click)
+			.await(Http.get('/toto'))
+				.and(Spinner.show)
+				.then(Spinner.hide))
+			.match(Match.test(function(response){
+						return response.status == 200
+					}, Log)
+					.default(Error))
+			.subscribe()
+		</script>
+
+		<script type="text/example">
+		Reactive.on(click)
+			.await(Http.get('/toto'))
+				.and(Spinner.show)
+				.then(Spinner.hide))
+			.match(Match.on(function(response){
+						return response.status
+					}, Log)
+					.value(200, Log)
+					.default(Error))
+			.subscribe()
+		</script>
+
+		<!-- Specialized Matchers -->
+		<script type="text/example">
+		var Status = Match.specialized({
+			OK: function(a){ return this.value(200, a) },
+			ERROR: function(a){ return this.test(function(s){
+				return s != 200
+			}, a) }
+		}).on(function(r){ return r.status })
+
+		Reactive.on(click)
+			.await(Http.get('/toto'))
+				.and(Spinner.show)
+				.then(Spinner.hide))
+			.match(Status.OK(Log)
+					.ERROR(Error))
+			.subscribe()
+		</script>
+
+		<script type="tmpl/mustache" id="page-tmpl">
+<section>
+	<div class="content">
+		<div class="left">
+			<pre class="prettyprint" id="ex{{n}}">
+				{{code}}
+			</pre>
+			<button class="run" data-code="#ex{{n}}">run</button>
+		</div>
+		<div class="right">
+			<ul class="console"></ul>
+		</div>
+	</div>
+	<nav>
+		<a href="#{{n + 1}}" class="goto next">➤</a>
+		<a href="#{{n - 1}}" class="goto prev">⇚</a>
+	</nav>
+</section>
+		</script>
+	</head>
+	<body>
+		<div class="main">
 		</div>
 	</body>
 </html>
