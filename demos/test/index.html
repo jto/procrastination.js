@@ -10,6 +10,7 @@
 		</style>
 		<script src="lib/zepto.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../src/http-jquery.procrastination.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(function(){
 
@@ -32,11 +33,6 @@
 				function click(next){ $(document.body).click(next) }
 				// var click = $(document.body).click
 
-				log = Action(function(v, next){
-					console.log('-- %o', v)
-					next(v)
-				})
-
 				/*
 				Reactive.on(key)
 					.map(function(evt){
@@ -45,7 +41,7 @@
 					.until(function(v){
 						return v == 13
 					})
-					.await(log)
+					.await(Log)
 					.subscribe()
 				*/
 
@@ -53,7 +49,7 @@
 				var r3 = Reactive
 					.on(key)
 					.group(3)
-					.await(log)
+					.await(Log)
 				
 				r3.subscribe()
 				r3.subscribe()
@@ -61,7 +57,7 @@
 				var aa = Reactive.on(key),
 				    ab = Reactive.on(mousemove)
 
-				aa.merge(ab).await(log).subscribe()
+				aa.merge(ab).await(Log).subscribe()
 				*/
 
 				/*
@@ -98,7 +94,7 @@
 						n(v)
 					}),
 					Route = Match.value('loutre', loutre)
-							.default(aie)
+							.def(aie)
 
 				Reactive.on(routeChanged)
 					.map(function(evt){
@@ -112,16 +108,11 @@
 					n(v)
 				})
 
-				var Http = Match.specialized({
-					OK: function(a){ return this.value(200, a) },
-					ERROR: function(a){ return this.value(500, a) }
-				}).on(function(r){ return r.status })
-
 				//	TODO: ?
 				//	Http.OK()
 				//		.4XX()
 				//		.5XX()
-				//		.default()
+				//		.def()
 				Reactive.on(click)
 					.map(function(v){
 						return {
@@ -130,7 +121,7 @@
 						}
 					})
 					.match(
-						Http.OK(log)
+						Http.m.OK(Log)
 							.ERROR(onError))
 					.subscribe()
 
@@ -170,7 +161,7 @@
 					.map(function(v){
 						return "I'll do it later... " + v
 					})
-					.await(log)
+					.await(Log)
 					.subscribe()
 
 				Reactive

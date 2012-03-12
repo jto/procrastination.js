@@ -343,7 +343,7 @@ table {
 			.match(Match.test(function(response){
 						return response.status == 200
 					}, Log)
-					.default(Error))
+					.def(Error))
 			.subscribe()
 		</script>
 
@@ -356,7 +356,7 @@ table {
 						return response.status
 					}, Log)
 					.value(200, Log)
-					.default(Error))
+					.def(Error))
 			.subscribe()
 		</script>
 

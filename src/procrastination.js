@@ -164,7 +164,7 @@ var Action = function(act) {
 		})
 	}
 
-	A.prototype.do = function(v){
+	A.prototype._do = function(v){
 		this.ƒ(v, this.complete)
 	}
 
@@ -172,8 +172,8 @@ var Action = function(act) {
 		var me = this
 		return new A(function(v, next){
 			me.onComplete(function (v2) {
-				ƒ.call(me, v2).onComplete(next).do(v2)
-			}).do(v)
+				ƒ.call(me, v2).onComplete(next)._do(v2)
+			})._do(v)
 		}, noop)
 	}
 
@@ -216,7 +216,7 @@ var Action = function(act) {
 		return new A(function(v, next){
 			me.onComplete(function(v2){
 				a.ƒ(v2, next)
-			}).do(v)
+			})._do(v)
 		}, a.complete)
 	}
 
@@ -241,8 +241,8 @@ var Action = function(act) {
 						action.complete(values)
 				}
 			}
-			me.onComplete(sync(0)).do(v)
-			a.onComplete(sync(1)).do(v)
+			me.onComplete(sync(0))._do(v)
+			a.onComplete(sync(1))._do(v)
 		}, noop)
 	}
 
@@ -427,7 +427,7 @@ var Reactive = (function() {
 		var me = this
 		return new R(function(next){
 			me.source.call(this, function(v){
-				a.onComplete(next).do(v)
+				a.onComplete(next)._do(v)
 			})
 		})
 	}
@@ -554,7 +554,7 @@ var Match = (function(){
 		}, this.def)
 	}
 
-	M.prototype.default = function(def){
+	M.prototype.def = function(def){
 		return new this._new(this.predicates, this.lambda, def)
 	}
 
@@ -616,6 +616,15 @@ var Events = {
 	}
 }
 
-
+// Utils
+function Call(ƒ){
+	return Action(function(v,n){
+		n(ƒ(v))
+	})
+}
+var Keep = Call(identity),
+		Log = Call(function(v){
+			console.log('-- %o', v)
+		})
 
 // vim: noexpandtab ts=2 sw=2:
