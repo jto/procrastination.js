@@ -1,0 +1,152 @@
+* {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	-webkit-box-sizing: border-box;
+}
+html {
+	width: 100%;
+	height: 100%;
+}
+body {
+	background: #0147af;
+	font: 13px Helvetica, sans-serif;
+}
+
+header {
+	background: #0147af url(pr.png) center center no-repeat;
+	position: fixed;
+	z-index: 9;
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+}
+#logo {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 237px;
+	margin-left: -130px;
+	margin-top: -137px;
+	padding: 10px;
+}
+#logo section {
+	height: 250px;
+	width: inherit;
+	position: relative;
+}
+#logo article {
+	position: absolute;
+	height: 175px;
+	width: inherit;
+	top: 46px;
+	-webkit-mask: url(mask.png) 0 0 no-repeat;
+}
+#sheet {
+	position: absolute;
+	overflow: hidden;
+	z-index: 99;
+	height: 230px;
+	width: 273px;
+
+	-webkit-transform: translate3d(-20px, 22px, 0)  rotateZ(15deg);
+}
+
+#sheet div {
+	position: absolute;
+	z-index: 99;
+	background: #fff url(postponed.png) center center no-repeat;
+
+	height: 175px;
+	width: 235px;
+
+	-webkit-transform: translate3d(293px, 26px, 0)  rotateZ(15deg) ;
+}
+
+#logo #download {
+	position: absolute;
+	z-index: 1;
+	color: #fff;
+}
+#logo #download .size {
+	position: absolute;
+	top: 10px;
+	right: 130px;
+	font-size: 120px;
+	font-weight: bold;
+}
+#logo #download .unit {
+	position: absolute;
+	top: 45px;
+	left: 110px;
+	font-size: 24px;
+	font-weight: bold;
+}
+#logo #download p {
+	position: absolute;
+	top: 70px;
+	left: 110px;
+	color: #7fcaf9;
+}
+#logo #download a {
+	background: #e45c09;
+	border-radius: 3px;
+	color: #fff;
+	text-shadow: -1px -1px 0 #752d01;
+	box-shadow: 0 3px 0 #752d01;
+	border: 1px solid #752d01;
+	text-decoration: none;
+	text-transform: uppercase;
+	font-weight: bold;
+	font-size: 14px;
+	padding: 2px 5px;
+	position: absolute;
+	top: 95px;
+	left: 110px;
+}
+#logo #fork {
+	-webkit-mask: url(mask2.png) 0 0 no-repeat;
+}
+#logo #fork a {
+	display: block;
+	margin: 30px;
+	text-align: center;
+	text-decoration: none;
+	text-transform: uppercase;
+	font-weight: bold;
+	font-size: 16px;
+	color: #fff;
+}
+
+
+
+#content {
+	top: 1600px;
+	width: 100%;
+	padding: 0 50px;
+	background: #fff;
+	position: absolute;
+	z-index: 9999;
+	box-shadow: 0 -10px 10px rgba(0,0,0,.2);
+	-webkit-transform: translate3d(0, 0, 10);
+}
+#content article {
+	width: 100%;
+	min-height: 700px;
+	margin: 50px 0;
+}
+#content article:not(:first-child) {
+	border-top: 4px solid #eee;
+}
+
+h1 {
+	color: #ccc;
+	font: 45px Bebas, sans-serif;
+	text-align: center;
+	text-shadow: 1px 1px 0 #fff, 2px 2px 0 #ddd;
+	word-spacing: 19px;
+
+}
+
+
