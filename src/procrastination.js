@@ -577,9 +577,9 @@ var Match = (function(){
  * 
  * <pre>
  * Reactive
- *   .on(bind('click'))
+ *   .on(Events.bind('click'))
  *   .map(function(v){ return 'foo' })
- *   .await(dispatch("changeTitle"))
+ *   .await(Events.ndispatch("changeTitle"))
  *   .subscribe()
  * </pre>
  */
