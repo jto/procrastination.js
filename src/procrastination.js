@@ -572,4 +572,50 @@ var Match = (function(){
 	return new M()
 })()
 
+/**
+ * Custom events helper
+ * 
+ * <pre>
+ * Reactive
+ *   .on(bind('click'))
+ *   .map(function(v){ return 'foo' })
+ *   .await(dispatch("changeTitle"))
+ *   .subscribe()
+ * </pre>
+ */
+var Events = {
+	/*
+	 * @parameter
+	 * e -  Event identifier
+	 * target - Facultative dom element
+	 * @return
+	 *   an Action
+	 */
+	bind: function(e, target) {
+		target = target || document
+		return function(n){
+			target.addEventListener(e, n)
+		}
+	},
+	/*
+	 * @parameter
+	 * e -  Event identifier
+	 * target - Facultative dom element
+	 * @return
+	 *   an Action
+	 */
+	trigger: function(e, target){
+		target = target || document
+		var evt = document.createEvent("Event")
+		    evt.initEvent(e, true, true)
+		return Action(function(v,n){
+			evt.data = v
+			target.dispatchEvent(evt)
+			n(v)
+		})
+	}
+}
+
+
+
 // vim: noexpandtab ts=2 sw=2:
