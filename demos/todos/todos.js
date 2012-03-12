@@ -1,51 +1,27 @@
 $(function(){
-	
-	/**
-	* Utilities Actions
-	* Should be provided by procrastination.js
-	*/
-	var P = {
-		req: function (method, url){
-			return Action(function(data, next){
-				console.log('%s -> %o', method, data)
-				setTimeout(function(){ next(data) }, 500)
-			})
-		},
-		PUT :function(url){ return P.req('PUT', url) },
-		POST: function(url){ return P.req('POST', url) },
-		DELETE: function(url){ return P.req('DELETE', url) },
-		log: Action(function(v, n){
-			console.log('LOG: %o', v)
-			n(v)
+
+	// TODO: Add this to procrastination.js
+	var Keep = Action(function(v, n){
+		n(v)
+	})
+
+	function Views(){
+		var args = Array.prototype.slice.call(arguments)
+		return Action(function(v, n){
+			return [v, args.map(function(view){
+				view.render(v)
+			})]
 		})
 	}
+
+	var Log = Action(function(v, n){
+		console.log('-- %o', v)
+		n(v)
+	})
 	
 	/**
 	* Views
 	*/
-	function Spin(a){
-		var sp = new Spinner({
-				lines: 6,
-				length: 1,
-				width: 5,
-				radius: 11,
-				color: '#000',
-				speed: 1,
-				trail: 50,
-				shadow: false,
-				hwaccel: true
-			}),
-			show = Action(function(v, next){
-				sp.spin(document.getElementById('create-todo'))
-				next(v)
-			}),
-			hide = Action(function(v, next){
-				sp.stop()
-				next(v)
-			})
-		return a.and(show).then(hide)
-	}
-
 	var Form = {
 		input: $('#new-todo'),
 		clear: Action(function(v, next){
@@ -57,39 +33,20 @@ $(function(){
 		})
 	}
 	
-	var Todo = {}	
-	Todo.tmpl = Action(function(todo, next){
-		var tmpl = _.template($('#item-template').html()),
-			el = $(tmpl(todo))
-				.appendTo('#todo-list')
-		next([todo, el])
-	})
-	
-	Todo.remove = function(v){
-		var el = v[1]
-		return Todo.del
-			.and(Action(function(v, next){
-				$(el).remove()
-				next(v)
-			}))
-	} 
-	
-	Todo.bind = Action(function(v, n){
-		var el = v[1]
-		Reactive
-			.on(function(next){
-				$('.todo-destroy', el[1]).click(next, false)
+	// Views
+	var Todo = {
+		delete: function(evt){
+			console.log('delete %o', evt)
+		},
+		render: function(todo, n){
+			var tmpl = _.template($('#item-template').html()),
+			el = $(tmpl(todo)).appendTo('#todo-list')
+
+			$(el).find('.todo-destroy').click(function(evt){
+				n({type: 'delete', model: todo, tmpl: el, target: evt.target})
 			})
-			.map(function(evt){ return v })
-			.await(Todo.remove(v))
-			.subscribe()
-		n(v)
-	})
-	
-	Todo.add = Todo.tmpl.then(Todo.bind)
-	Todo.create = Spin(Todo.add.and(P.PUT('/todo')))
-	Todo.postpone = Spin(P.POST('/todo'))
-	Todo.del = Spin(P.DELETE('/todo'))
+		}
+	}
 
 	Todo.key = function(next){ $('#new-todo').keydown(next, false) }
 
@@ -97,10 +54,12 @@ $(function(){
 	* Events
 	*/
 	// Create
-	Reactive
-		.on(Todo.key)
-		.filter(function(evt){
-			return evt.keyCode == 13
+	Reactive.on(Todo.key)
+		.map(function(evt){
+			return evt.keyCode
+		})
+		.filter(function(code){
+			return code == 13
 		})
 		.await(Form.value)
 		.filter(function(v){
@@ -109,7 +68,6 @@ $(function(){
 		.map(function(v){
 			return { text: v, done: false, since: new Date() }
 		})
-		.await(Form.clear.and(Todo.create))
+		.await(Views(Todo).then(Log))
 		.subscribe()
-
 })
