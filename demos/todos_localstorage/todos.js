@@ -27,11 +27,18 @@ $(function(){
 		del: function(e){
 			$(e.tmpl).remove()
 		},
+		toggle: function(e){
+			$(e.tmpl).toggleClass("done", e.model.done)
+		},
 		render: function(todo, n){
 			console.log(todo)
 			var tmpl = _.template($('#item-template').html()),
 			el = $(tmpl(todo)).appendTo('#todo-list')
 
+			$('.check', el).change(function(e){
+				todo.done = $(e.target).is(":checked")
+				n({type: 'toggle', model: todo, tmpl: el, target: e.target})
+			})
 			$('.todo-destroy', el).click(function(e){
 				n({type: 'del', model: todo, tmpl: el, target: e.target})
 			})
@@ -43,6 +50,9 @@ $(function(){
 	var Todos = {
 		del: function(e){
 			TodoStore.destroy(e.model)
+		},
+		toggle: function(e){
+			TodoStore.update(e.model)
 		},
 		render: function(todo){
 			if (!todo.id) todo = TodoStore.create(todo)
