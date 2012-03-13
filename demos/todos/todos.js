@@ -18,14 +18,15 @@ $(function(){
 		del: function(evt){
 			$(evt.tmpl).remove()
 		},
-		render: function(todo, n){
+
+		render: Action(function(todo, n){
 			var tmpl = _.template($('#item-template').html()),
 			el = $(tmpl(todo)).appendTo('#todo-list')
 
 			$('.todo-destroy', el).click(function(evt){
 				n({type: 'del', model: todo, tmpl: el, target: evt.target})
 			})
-		}
+		})
 	}
 
 	Todo.key = function(next){ $('#new-todo').keydown(next) }

@@ -1,12 +1,14 @@
 function Views(){
-	var args = Array.prototype.slice.call(arguments)
-	return Action(function(v, n){
-		return [v, args.map(function(view){
-			view.render(v, function(o){
-				n([o, args])
-			})
-		})]
+	var vs = Array.prototype.slice.call(arguments),
+		act = Keep
+	// TODO: Should be a fold
+	vs.forEach(function(view){
+		act = act.and(view.render)
+				.then(Action(function(v, n){
+					n([v[1], vs])
+				}))
 	})
+	return act
 }
 
 var Dispatch = Action(function(v, n){
