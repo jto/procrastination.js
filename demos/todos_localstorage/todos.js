@@ -28,6 +28,7 @@ $(function(){
 			$(e.tmpl).remove()
 		},
 		render: function(todo, n){
+			console.log(todo)
 			var tmpl = _.template($('#item-template').html()),
 			el = $(tmpl(todo)).appendTo('#todo-list')
 
@@ -38,14 +39,13 @@ $(function(){
 	}
 
 	// Localstorage are views
+	var TodoStore = new Store("todos")
 	var Todos = {
-		store: new Store("todos"),
-		init: function(todo){
-			todo = Todos.store.create(todo)
-		},
 		del: function(e){
-			console.log("delete", e)
-			Todos.store.destroy(e.model)
+			TodoStore.destroy(e.model)
+		},
+		render: function(todo){
+			if (!todo.id) todo = TodoStore.create(todo)
 		}
 	}
 
@@ -70,6 +70,16 @@ $(function(){
 			return !!v.trim().length
 		})
 		.map(TodoData)
+		.await(Views(Todo, Todos).then(Dispatch))
+		.subscribe()
+
+	Reactive.on(function(n){
+			// not a nicer way ?!
+			var list =  TodoStore.findAll()
+			for( todo in list){
+				n( list[todo] )
+			}
+		})
 		.await(Views(Todo, Todos).then(Dispatch))
 		.subscribe()
 
