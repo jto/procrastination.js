@@ -1,53 +1,21 @@
 $(function(){
-
-	// TODO: Add this to procrastination.js
-	var Keep = Action(function(v, n){
-		n(v)
-	})
-
-	function Views(){
-		var args = Array.prototype.slice.call(arguments)
-		return Action(function(v, n){
-			return [v, args.map(function(view){
-				view.render(v, function(o){
-					n([o, args])
-				})
-			})]
-		})
-	}
-
-	var Dispatch = Action(function(v, n){
-		var evt = v[0],
-			views = v[1]
-		views.forEach(function(view){
-			var m = view[evt.type] || noop
-			m(evt)
-		})
-	})
-
-	var Log = Action(function(v, n){
-		console.log('-- %o', v)
-		n(v)
-	})
-	
 	/**
 	* Views
 	*/
 	var Form = {
 		input: $('#new-todo'),
-		clear: Action(function(v, next){
+		clear: Call(function(v){
 			Form.input.val('')
-			next(v)
+			return v
 		}),
-		value: Action(function(v, next){ 
-			next(Form.input.val())
+		value: Call(function(v){ 
+			return Form.input.val()
 		})
 	}
 	
 	// Views
 	var Todo = {
-		delete: function(evt){
-			console.log(evt)
+		del: function(evt){
 			$(evt.tmpl).remove()
 		},
 		render: function(todo, n){
@@ -55,7 +23,7 @@ $(function(){
 			el = $(tmpl(todo)).appendTo('#todo-list')
 
 			$('.todo-destroy', el).click(function(evt){
-				n({type: 'delete', model: todo, tmpl: el, target: evt.target})
+				n({type: 'del', model: todo, tmpl: el, target: evt.target})
 			})
 		}
 	}
