@@ -625,6 +625,7 @@ function Call(ƒ){
 var Keep = Call(identity),
 		Log = Call(function(v){
 			console.log('-- %o', v)
+			return v
 		})
 
 // vim: noexpandtab ts=2 sw=2:
