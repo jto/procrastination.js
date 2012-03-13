@@ -589,7 +589,7 @@ var Events = {
 	 * e -  Event identifier
 	 * target - Facultative dom element
 	 * @return
-	 *   an Action
+	 * function
 	 */
 	bind: function(e, target) {
 		target = target || document
