@@ -28,21 +28,21 @@ $(function(){
 			$(e.tmpl).remove()
 			return e
 		}),
-		toggle: Call(function(e){
-			$(e.tmpl).toggleClass("done", e.model.done)
-			return e
+		toggle: Action(function(e,n){
+			$(".todo",e.tmpl).toggleClass("done", e.model.done)
+			n(e)
 		}),
 		render: Action(function(e, n){
 			var todo = e.model
 			var tmpl = _.template($('#item-template').html()),
 			el = $(tmpl(todo)).appendTo('#todo-list')
 
-			$('.check', el).change(function(e){
-				todo.done = $(e.target).is(":checked")
-				n({type: 'toggle', model: todo, tmpl: el, target: e.target})
+			$('.check', el).change(function(evt){
+				todo.done = $(evt.target).is(":checked")
+				n({type: 'toggle', model: todo, tmpl: el, target: evt.target})
 			})
-			$('.todo-destroy', el).click(function(e){
-				n({type: 'del', model: todo, tmpl: el, target: e.target})
+			$('.todo-destroy', el).click(function(evt){
+				n({type: 'del', model: todo, tmpl: el, target: evt.target})
 			})
 		})
 	}
@@ -99,4 +99,6 @@ $(function(){
 		.subscribe()
 
 })
+
+
 
