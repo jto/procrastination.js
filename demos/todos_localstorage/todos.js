@@ -34,7 +34,6 @@ $(function(){
 		}),
 		render: Action(function(e, n){
 			var todo = e.model
-			console.log(e)
 			var tmpl = _.template($('#item-template').html()),
 			el = $(tmpl(todo)).appendTo('#todo-list')
 
@@ -43,7 +42,6 @@ $(function(){
 				n({type: 'toggle', model: todo, tmpl: el, target: e.target})
 			})
 			$('.todo-destroy', el).click(function(e){
-				console.log(e,n)
 				n({type: 'del', model: todo, tmpl: el, target: e.target})
 			})
 		})

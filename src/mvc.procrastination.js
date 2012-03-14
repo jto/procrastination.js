@@ -18,9 +18,9 @@ function Views(){
 			.subscribe()
 
 	return Action(function(v,n){
-		v = { type: 'render', model: v }
-		next(v)
+		next({ type: 'render', model: v })
 		n(v)
 	})
 
 }
+
