@@ -79,12 +79,11 @@ $(function(){
 		})
 	}
 	// Init count view
-	!function(){
+	;(function(){
 		var tmpl = _.template($('#stats-template').html()),
 			el = tmpl({ remaining: 0, total: true, done: false })
 		Count._el = $('#todo-stats').html(el).find(".number")
-	}()
-
+	})()
 
 	/**
 	 * Models
