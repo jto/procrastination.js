@@ -32,7 +32,7 @@ $(function(){
 
 	Count = {
 		_c: 0,
-		render: Action(function(evt, n){
+		update: Action(function(evt, n){
 			var tmpl = _.template($('#stats-template').html()),
 				el = $(tmpl({ remaining: Count._c, total: true, done: false }))
 
@@ -43,12 +43,12 @@ $(function(){
 	Count.del = Call(function(evt){
 		Count._c--
 		return evt
-	}).then(Count.render)
+	}).then(Count.update)
 
 	Count.create = Call(function(evt){
 		Count._c++
 		return evt
-	}).then(Count.render)
+	}).then(Count.update)
 
 	Todo.key = function(next){ $('#new-todo').keydown(next) }
 
@@ -69,9 +69,6 @@ $(function(){
 		})
 		.map(function(v){
 			return { text: v, done: false, since: new Date() }
-		})
-		.map(function(todo){
-			return { type: 'create', model: todo }
 		})
 		.await(Views(Todo, Count))
 		.subscribe()

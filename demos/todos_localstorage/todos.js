@@ -32,7 +32,7 @@ $(function(){
 			$(".todo",e.tmpl).toggleClass("done", e.model.done)
 			n(e)
 		}),
-		render: Action(function(e, n){
+		create: Action(function(e, n){
 			var todo = e.model
 			var tmpl = _.template($('#item-template').html()),
 			el = $(tmpl(todo)).appendTo('#todo-list')
@@ -58,11 +58,33 @@ $(function(){
 			TodoStore.update(e.model)
 			return e
 		}),
-		render: Action(function(e, n){
+		create: Action(function(e, n){
 			var todo = e.model
 			if (!todo.id) todo = TodoStore.create(todo)
 		})
 	}
+
+	// Pretty counter of remaining tasks
+	var Count = {
+		_c: 0,
+		toggle: Action(function(evt, n){
+			Count._el.html( evt.model.done ? --Count._c : ++Count._c )
+		}),
+		del: Action(function(evt,n){
+			Count._el.html( evt.model.done ? Count._c : --Count._c )
+		}),
+		// We are talking about the creation of each todo, not the Counter
+		create: Action(function(evt,n){
+			Count._el.html( evt.model.done ? Count._c : ++Count._c )
+		})
+	}
+	// Init count view
+	!function(){
+		var tmpl = _.template($('#stats-template').html()),
+			el = tmpl({ remaining: 0, total: true, done: false })
+		Count._el = $('#todo-stats').html(el).find(".number")
+	}()
+
 
 	/**
 	 * Models
@@ -85,7 +107,7 @@ $(function(){
 			return !!v.trim().length
 		})
 		.map(TodoData)
-		.await(Views(Todo, Todos))
+		.await(Views(Todo, Todos, Count))
 		.subscribe()
 
 	Reactive.on(function(n){
@@ -95,7 +117,7 @@ $(function(){
 				n( list[todo] )
 			}
 		})
-		.await(Views(Todo, Todos))
+		.await(Views(Todo, Todos, Count))
 		.subscribe()
 
 })

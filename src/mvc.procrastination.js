@@ -4,7 +4,7 @@ function Views(){
 		next,
 		calling = Action(function(e, n){
 			views.forEach(function(view){
-				view[e.type]
+				if (view[e.type]) view[e.type]
 					.onComplete(n)
 					._do(e)
 			})
@@ -18,7 +18,7 @@ function Views(){
 			.subscribe()
 
 	return Action(function(v,n){
-		next({ type: 'render', model: v })
+		next({ type: 'create', model: v })
 		n(v)
 	})
 
