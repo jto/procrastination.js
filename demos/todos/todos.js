@@ -15,38 +15,55 @@ $(function(){
 	
 	// Views
 	var Todo = {
-		del: Action(function(evt, n){
-			$(evt.tmpl).remove()
+		del: Call(function(v){
+			$(v[0].tmpl).remove()
+			return v
 		}),
 
-		create: Action(function(evt, n){
-			var todo = evt.model,
+		create: Call(function(v){
+			var evt = v[0],
+				views = v[1],
+				todo = evt.model,
 				tmpl = _.template($('#item-template').html()),
 				el = $(tmpl(todo)).appendTo('#todo-list')
-			$('.todo-destroy', el).click(function(evt){
-				n({ type: 'del', model: todo, tmpl: el })
-			})
+
+			var d = function(next){
+				$('.todo-destroy', el).click(next)
+			}
+
+			Reactive.on(d)
+				.map(function(v){
+					return { type: 'del', model: todo, tmpl: el }
+				})
+				.await(Dispatch(views))
+				.subscribe()
+
+			return evt
 		}),
+
 	},
 
 	Count = {
-		_c: 0,
-		render: Action(function(evt, n){
-			var tmpl = _.template($('#stats-template').html()),
+		_c: 0, // XXX
+		render: Call(function(v){
+			var evt = v[0],
+				views = v[1],
+				tmpl = _.template($('#stats-template').html()),
 				el = $(tmpl({ remaining: Count._c, total: true, done: false }))
 
 			$('#todo-stats').html(el)
+			return v
 		})
 	}
 
-	Count.del = Call(function(evt){
+	Count.del = Call(function(v){
 		Count._c--
-		return evt
+		return v
 	}).then(Count.render)
 
-	Count.create = Call(function(evt){
+	Count.create = Call(function(v){
 		Count._c++
-		return evt
+		return v
 	}).then(Count.render)
 
 	Todo.key = function(next){ $('#new-todo').keydown(next) }
@@ -72,6 +89,6 @@ $(function(){
 		.map(function(todo){
 			return { type: 'create', model: todo }
 		})
-		.await(Views(Todo, Count))
+		.await(Views(Todo , Count))
 		.subscribe()
 })
