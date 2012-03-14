@@ -1,12 +1,26 @@
 function Views(){
-	var vs = Array.prototype.slice.call(arguments),
-		Dispatch = Action(function(evt, n){
-			vs.forEach(function(view){
-				view[evt.type]
+
+	var views = Array.prototype.slice.call(arguments),
+		next,
+		calling = Action(function(e, n){
+			views.forEach(function(view){
+				view[e.type]
 					.onComplete(n)
-					._do(evt)
+					._do(e)
 			})
 		})
 
-	return Dispatch.then(Dispatch)
+		Reactive
+			.on(function(n){
+				next = n
+			})
+			.await(calling.then(calling))
+			.subscribe()
+
+	return Action(function(v,n){
+		v = { type: 'render', model: v }
+		next(v)
+		n(v)
+	})
+
 }

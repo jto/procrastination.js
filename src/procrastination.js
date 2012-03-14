@@ -624,7 +624,6 @@ function Call(ƒ){
 }
 var Keep = Call(identity),
 		Log = Call(function(v){
-			console.log('-- %o', v)
 			return v
 		})
 
