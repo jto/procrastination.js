@@ -15,9 +15,8 @@ $(function(){
 	
 	// Views
 	var Todo = {
-		del: Call(function(evt){
+		del: Action(function(evt, n){
 			$(evt.tmpl).remove()
-			return evt
 		}),
 
 		create: Action(function(evt, n){
