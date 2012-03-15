@@ -89,6 +89,7 @@ $(function(){
 		.map(function(todo){
 			return { type: 'create', model: todo }
 		})
-		.await(Views(Todo , Count))
+		.await(Views(Todo , Count)
+			.then(Log))
 		.subscribe()
 })
