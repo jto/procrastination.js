@@ -1,7 +1,7 @@
 /**
- * # Procrastinate.js
+ * # Procrastination.js
  *
- * Procrastinate.js is a : foo
+ * Procrastination.js is a : foo
  */
 
 /**
