@@ -1,4 +1,21 @@
 $(function(){
+
+	// shoul be in Action prototype
+	function Dispatch(){
+		var views = Array.prototype.slice.call(arguments)
+		return Action(function(evt, n){
+			views.forEach(function(view){
+				view[evt.type]
+					.onComplete(n)
+					._do(evt)
+			})
+		})
+	}
+
+	function Event(type, model, tmpl){
+		return { type: type, model: model, tmpl: tmpl }
+	}
+
 	/**
 	* Views
 	*/
@@ -15,44 +32,36 @@ $(function(){
 	
 	// Views
 	var Todo = {
-		del: Call(function(v){
-			$(v[0].tmpl).remove()
-			return v
+		del: Call(function(evt){
+			$(evt.tmpl).remove()
+			return evt
 		}),
 
-		create: Call(function(v){
-			var evt = v[0],
-				views = v[1],
-				todo = evt.model,
+		create: Action(function(evt, n){
+			var todo = evt.model,
 				tmpl = _.template($('#item-template').html()),
-				el = $(tmpl(todo)).appendTo('#todo-list')
-
-			var d = function(next){
-				$('.todo-destroy', el).click(next)
-			}
+				el = $(tmpl(todo)).appendTo('#todo-list'),
+				d = function(next){
+					$('.todo-destroy', el).click(next)
+				}
 
 			Reactive.on(d)
 				.map(function(v){
-					return { type: 'del', model: todo, tmpl: el }
+					return Event('del', todo, el)
 				})
-				.await(Dispatch(views))
+				.await(Call(n))
 				.subscribe()
-
-			return evt
 		}),
 
 	},
 
 	Count = {
 		_c: 0, // XXX
-		render: Call(function(v){
-			var evt = v[0],
-				views = v[1],
-				tmpl = _.template($('#stats-template').html()),
+		render: Action(function(evt, n){
+			var tmpl = _.template($('#stats-template').html()),
 				el = $(tmpl({ remaining: Count._c, total: true, done: false }))
 
 			$('#todo-stats').html(el)
-			return v
 		})
 	}
 
@@ -66,8 +75,13 @@ $(function(){
 		return v
 	}).then(Count.render)
 
-	Todo.key = function(next){ $('#new-todo').keydown(next) }
+	var Render = Dispatch(Todo, Count)
+	var Init = Call(function(m){
+		return Event('create', m)
+	}).then(Render)
 
+
+	Todo.key = function(next){ $('#new-todo').keydown(next) }
 	/**
 	* Events
 	*/
@@ -86,10 +100,6 @@ $(function(){
 		.map(function(v){
 			return { text: v, done: false, since: new Date() }
 		})
-		.map(function(todo){
-			return { type: 'create', model: todo }
-		})
-		.await(Views(Todo , Count)
-			.then(Log))
+		.await(Init.then(Render))
 		.subscribe()
 })
