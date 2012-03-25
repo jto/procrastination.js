@@ -1,14 +1,24 @@
-function Views(){
-	var vs = Array.prototype.slice.call(arguments)
-	return Dispatch(vs)
+function Dispatch(ls){
+	return Action(function(evt, n){
+		ls.forEach(function(l){
+			if(l[evt.type])
+				l[evt.type].onComplete(n)._do(evt)
+		})
+	})
 }
 
-function Dispatch(views){
-	return Action(function(evt, n){
-		views.forEach(function(view){
-			view[evt.type]
-				.onComplete(n)
-				._do([evt, views])
-		})
+function Event(type, model, tmpl){
+	return { type: type, model: model, tmpl: tmpl }
+}
+
+function Listen(){
+	var ls = Array.prototype.slice.call(arguments)
+	// TODO: recursive Dispatch
+	return Action(function(v, n){
+		var r = function(v){
+			Dispatch(ls).onComplete(r)._do(v)
+			n(v)
+		}
+		r(v)
 	})
 }

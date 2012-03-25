@@ -1,41 +1,4 @@
 $(function(){
-
-
-	function Dispatch(ls){
-		return Action(function(evt, n){
-			ls.forEach(function(l){
-				if(l[evt.type])
-					l[evt.type].onComplete(n)._do(evt)
-			})
-		})
-	}
-
-	function Event(type, model, tmpl){
-		return { type: type, model: model, tmpl: tmpl }
-	}
-
-	var Effect = function(ƒ){
-		return Call(function(v){
-			ƒ(v)
-			return v
-		})
-	}
-
-	function Listen(){
-		var ls = Array.prototype.slice.call(arguments)
-		// TODO: recursive Dispatch
-		return Action(function(v, n){
-			var r = function(v){
-				Dispatch(ls).onComplete(r)._do(v)
-				n(v)
-			}
-			r(v)
-		})
-	}
-
-	/**
-	* Views
-	*/
 	var Todo = {
 		del: Action(function(evt, n){
 			$(evt.tmpl).remove()
@@ -87,9 +50,8 @@ $(function(){
 	})
 
 	/**
-	* Events
+	* Main
 	*/
-	// Create
 	Reactive.on($)
 		.map(function(){
 			return Event('init')
