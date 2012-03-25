@@ -622,10 +622,11 @@ function Call(ƒ){
 		n(ƒ(v))
 	})
 }
-var Keep = Call(identity),
-		Log = Call(function(v){
-			console.log('-- %o', v)
-			return v
-		})
+var Id = Call(identity),
+	Log = Call(function(v){
+		console.log('-- %o', v)
+		return v
+	}),
+	Noop = Call(noop)
 
 // vim: noexpandtab ts=2 sw=2:

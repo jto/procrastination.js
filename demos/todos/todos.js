@@ -1,13 +1,11 @@
 $(function(){
 
-	// shoul be in Action prototype
-	function Dispatch(){
-		var views = Array.prototype.slice.call(arguments)
+
+	function Dispatch(ls){
 		return Action(function(evt, n){
-			views.forEach(function(view){
-				view[evt.type]
-					.onComplete(n)
-					._do(evt)
+			ls.forEach(function(l){
+				if(l[evt.type])
+					l[evt.type].onComplete(n)._do(evt)
 			})
 		})
 	}
@@ -16,25 +14,31 @@ $(function(){
 		return { type: type, model: model, tmpl: tmpl }
 	}
 
+	var Effect = function(ƒ){
+		return Call(function(v){
+			ƒ(v)
+			return v
+		})
+	}
+
+	function Listen(){
+		var ls = Array.prototype.slice.call(arguments)
+		// TODO: recursive Dispatch
+		return Action(function(v, n){
+			var r = function(v){
+				Dispatch(ls).onComplete(r)._do(v)
+				n(v)
+			}
+			r(v)
+		})
+	}
+
 	/**
 	* Views
 	*/
-	var Form = {
-		input: $('#new-todo'),
-		clear: Call(function(v){
-			Form.input.val('')
-			return v
-		}),
-		value: Call(function(v){ 
-			return Form.input.val()
-		})
-	}
-	
-	// Views
 	var Todo = {
-		del: Call(function(evt){
+		del: Action(function(evt, n){
 			$(evt.tmpl).remove()
-			return evt
 		}),
 
 		create: Action(function(evt, n){
@@ -46,60 +50,50 @@ $(function(){
 				}
 
 			Reactive.on(d)
-				.map(function(v){
-					return Event('del', todo, el)
-				})
+				.map(function(v){ return Event('del', todo, el) })
 				.await(Call(n))
 				.subscribe()
-		}),
-
-	},
-
-	Count = {
-		_c: 0, // XXX
-		render: Action(function(evt, n){
-			var tmpl = _.template($('#stats-template').html()),
-				el = $(tmpl({ remaining: Count._c, total: true, done: false }))
-
-			$('#todo-stats').html(el)
 		})
 	}
 
-	Count.del = Call(function(v){
-		Count._c--
-		return v
-	}).then(Count.render)
+	var Form = {
+		_input: $('#new-todo'),
+		clear: Effect(function(){
+			Form._input.val('')
+		}),
+		value: Call(function(v){ 
+			return Form._input.val()
+		})
+	}
 
-	Count.create = Call(function(v){
-		Count._c++
-		return v
-	}).then(Count.render)
+	Form.init = Action(function(v, n){
+		var key = function(next){ Form._input.keydown(next) }
+		Reactive.on(key)
+			.map(function(evt){
+				return evt.keyCode
+			})
+			.filter(function(code){
+				return code == 13
+			})
+			.await(Form.value.then(Form.clear)) // Humf
+			.filter(function(v){
+				return !!v.trim().length
+			})
+			.map(function(v){
+				return Event('create', { text: v, done: false, since: new Date()})
+			})
+			.await(Call(n))
+			.subscribe()
+	})
 
-	var Render = Dispatch(Todo, Count)
-	var Init = Call(function(m){
-		return Event('create', m)
-	}).then(Render)
-
-
-	Todo.key = function(next){ $('#new-todo').keydown(next) }
 	/**
 	* Events
 	*/
 	// Create
-	Reactive.on(Todo.key)
-		.map(function(evt){
-			return evt.keyCode
+	Reactive.on($)
+		.map(function(){
+			return Event('init')
 		})
-		.filter(function(code){
-			return code == 13
-		})
-		.await(Form.value.then(Form.clear))
-		.filter(function(v){
-			return !!v.trim().length
-		})
-		.map(function(v){
-			return { text: v, done: false, since: new Date() }
-		})
-		.await(Init.then(Render))
+		.await(Listen(Todo, Form).then(Log))
 		.subscribe()
 })
