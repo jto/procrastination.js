@@ -416,6 +416,12 @@ var Reactive = (function() {
 		})
 	}
 
+	R.prototype.mapVal = function(v){
+		return this.map(function(){
+			return v
+		})
+	}
+
 	/**
 	 * Add an Action you want to be called when events are triggered
 	 * @param
@@ -627,6 +633,12 @@ var Id = Call(identity),
 		console.log('-- %o', v)
 		return v
 	}),
-	Noop = Call(noop)
+	Noop = Call(noop),
+	Effect = function(ƒ){
+		return Call(function(v){
+			ƒ(v)
+			return v
+		})
+	}
 
 // vim: noexpandtab ts=2 sw=2:

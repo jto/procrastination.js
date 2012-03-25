@@ -13,7 +13,7 @@ $(function(){
 				}
 
 			Reactive.on(d)
-				.map(function(v){ return Event('del', todo, el) })
+				.mapVal(Event('del', todo, el))
 				.await(Call(n))
 				.subscribe()
 		})
@@ -53,9 +53,7 @@ $(function(){
 	* Main
 	*/
 	Reactive.on($)
-		.map(function(){
-			return Event('init')
-		})
+		.mapVal(Event('init'))
 		.await(Listen(Todo, Form).then(Log))
 		.subscribe()
 })
