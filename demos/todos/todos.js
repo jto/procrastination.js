@@ -63,21 +63,47 @@ $(function(){
 	})
 
 	var Counter = {
-		update: Action(function(evt, n){
+		update: Action(function(c, n){
 			var tmpl = _.template($('#stats-template').html()),
-				el = $(tmpl({ remaining: Counter._c, total: true, done: false }))
+				el = $(tmpl({ remaining: c, total: true, done: false }))
 			$('#todo-stats').html(el)
 		})
 	}
-	Counter.del = Effect(function(evt){ Counter._c-- }).then(Counter.update)
-	Counter.create = Effect(function(evt){ Counter._c++ }).then(Counter.update)
-	Counter.init = Effect(function(){ Counter._c = 0 }).then(Counter.update)
+
+	// Model
+	var Count = {
+		init: Call(function(n){
+			return 0
+		}),
+
+		create: Call(function(n){
+			return n + 1
+		}),
+
+		del: Call(function(n){
+			return n - 1
+		})
+	}
 
 	/**
 	* Main
 	*/
 	Reactive.on($)
 		.mapVal(Event('init'))
-		.await(Listen(Todo, Form, Counter).then(Log))
+		.await(
+			Listen(Todo, Form)
+				.then(State(Count)
+					.then(Counter.update)))
 		.subscribe()
+
+	function State(m){
+		var _value = null
+		return Action(function(evt, n) {
+			var action = m[evt.type] || Noop
+			action.onComplete(function(v){
+				_value = v
+				n(v)
+			})._do(_value)
+		})
+	}
 })

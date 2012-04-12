@@ -13,7 +13,6 @@ function Event(type, model, tmpl){
 
 function Listen(){
 	var ls = Array.prototype.slice.call(arguments)
-	// TODO: recursive Dispatch
 	return Action(function(v, n){
 		var r = function(v){
 			Dispatch(ls).onComplete(r)._do(v)
