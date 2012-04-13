@@ -578,6 +578,50 @@ var Match = (function(){
 	return new M()
 })()
 
+// ## State
+var State = (function(){
+	function S(ƒ){
+		this.ƒ = ƒ
+	}
+
+	function ret (r){ // aka return
+		return new S(function(s){
+			return [r, s]
+		})
+	}
+	
+	S.prototype = M.clone()
+
+	S.prototype.put = function(s){
+		return new S(function(){
+			return [[], s]
+		})
+	}
+
+	S.prototype.get = function(){
+		return new S(function(s){
+			return [s, s]
+		})
+	}
+	
+	S.prototype.run = function(s){
+		return this.ƒ(s)
+	}	
+	
+	S.prototype.flatmap = function(ƒ){
+		var me = this
+		return new S(function(s){
+			var a = me.run(s),
+				r = a[0],
+				newState = a[1]
+			return ƒ(r).run(newState)
+		})
+	}
+	
+	return ret
+})()
+
+
 /**
  * Custom events helper
  * 
