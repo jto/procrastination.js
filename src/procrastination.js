@@ -43,7 +43,7 @@ var M = (function(){	// TODO: scope
 
 	M.clone = function(){
 		var o = {}
-		for (x in M.fn) o[x] = M.fn[x]
+		for (var x in M.fn) o[x] = M.fn[x]
 		return o
 	}
 
