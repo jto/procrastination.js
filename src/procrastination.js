@@ -561,6 +561,7 @@ var Match = (function(){
 		}, this.def)
 	}
 
+	// TODO: is this broken ?
 	M.prototype.def = function(def){
 		return new this._new(this.predicates, this.lambda, def)
 	}
