@@ -38,8 +38,12 @@
 	 */
 	function noop(){}
 
+	var TODO = function(){
+		throw 'NotImplemented'
+	}
+
 	// ## M
-	var M = (function(){	// TODO: scope
+	var M = (function(){
 		function M(){}
 		M.fn = {}
 
@@ -528,10 +532,6 @@
 				predicate: ƒ,
 				action: a
 			}]), this.lambda, this.def)
-		}
-
-		var TODO = function(){
-			throw 'NotImplemented'
 		}
 
 		M.prototype.value = function(r, a){
