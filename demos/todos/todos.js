@@ -11,12 +11,12 @@ $(function(){
 				d = function(next){ $('.todo-destroy', el).click(next) },
 				dbl = function(next){ el.dblclick(next) }
 
-			Reactive.on(d)
+			When(d)
 				.mapVal(Event('del', todo, el))
 				.await(Call(n))
 				.subscribe()
 
-			Reactive.on(dbl)
+			When(dbl)
 				.mapVal(Event('edit', todo, el))
 				.await(Call(n))
 				.subscribe()
@@ -44,7 +44,7 @@ $(function(){
 
 	Form.init = Action(function(v, n){
 		var key = function(next){ Form._input.keydown(next) }
-		Reactive.on(key)
+		When(key)
 			.map(function(evt){
 				return evt.keyCode
 			})
@@ -88,7 +88,7 @@ $(function(){
 	/**
 	* Main
 	*/
-	Reactive.on($)
+	When($)
 		.mapVal(Event('init'))
 		.await(
 			Listen(Todo, Form)
