@@ -565,7 +565,7 @@
 			}, this.def)
 		}
 
-		M.prototype.def = function(def){
+		M.prototype.dft = function(def){
 			return new this._new(this.predicates, this.lambda, def)
 		}
 
