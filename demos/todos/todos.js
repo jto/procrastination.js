@@ -1,3 +1,4 @@
+/*
 $(function(){
 	var Todo = {
 		del: Action(function(evt, n){
@@ -85,9 +86,6 @@ $(function(){
 		})
 	}
 
-	/**
-	* Main
-	*/
 	When($)
 		.mapVal(Event('init'))
 		.await(
@@ -106,4 +104,53 @@ $(function(){
 			})._do(_value)
 		})
 	}
+})
+*/
+$(function(){
+	//TODO: refactor form
+	var Form = {
+		_input: $('#new-todo'),
+		clear: Effect(function(){
+			Form._input.val('')
+		}),
+		value: Call(function(v){ 
+			return Form._input.val()
+		}),
+	}
+	Form.cv = Form.value.then(Form.clear)
+	var key = function(next){ Form._input.keydown(next) }
+	NewTodo = When(key)
+			.map(function(evt){
+				return evt.keyCode
+			})
+			.filter(function(code){
+				return code == 13
+			})
+			.await(Form.cv) // Humf
+			.filter(function(v){
+				return !!v.trim().length
+			})
+			.map(function(v){
+				return { text: v, done: false, since: new Date() }
+			})
+
+
+	var Todo = Call(function(todo){
+		var tmpl = _.template($('#item-template').html()),
+			el = $(tmpl(todo)).appendTo('#todo-list')
+
+		return Effect(function(){
+			d = function(next){ $('.todo-destroy', el).click(next) }
+
+			When(d)
+				.await(Effect(function(){
+					todo.text = "clicked at: " + new Date
+				}))
+				.subscribe()
+		})
+	}).flatten
+	
+	NewTodo
+		.await(Todo)
+		.subscribe()
 })

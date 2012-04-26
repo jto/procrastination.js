@@ -497,6 +497,12 @@
 			return this.await(m.action())
 		}
 		
+		R.prototype.var = function(){
+			return this.await(Action(function(o, n){
+				n(Var(o, n))
+			}))
+		}
+		
 		return function(){
 			var r = new R()
 			return r.on.apply(r, Array.prototype.slice.call(arguments))
@@ -584,6 +590,7 @@
 	})()
 
 	// ## State
+	/*
 	var State = global.State = (function(){
 		function S(ƒ){
 			this.ƒ = ƒ
@@ -625,7 +632,32 @@
 	
 		return ret
 	})()
+	*/
+	
+	// TODO; expose this ?
+	var Var = function Var(obj, n){
+		var S = new function(){ this._data = obj }
 
+		// TODO: builk update (+ support new getter setters if necessary)
+
+		for(var i in obj){
+			// wtf safari ?
+			(function(i){
+				Object.defineProperty(S, i, {
+					enumerable : true,
+					configurable : true,
+					get : function(){
+						return S._data[i]
+					},
+					set : function(v){
+						S._data[i] = v;
+						n(S._data)
+					}
+				})
+			})(i)
+		}
+		return S
+	}
 
 	/**
 	 * Custom events helper
