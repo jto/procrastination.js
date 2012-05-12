@@ -31,12 +31,12 @@
 	 * @return
 	 *	 What you have given me as parameter
 	 */
-	function identity(a){ return a }
+	global.identity = function identity(a){ return a }
 
 	/**
 	 * Noop does nothing
 	 */
-	function noop(){}
+	global.noop = function noop(){}
 
 	var TODO = function(){
 		throw 'NotImplemented'
@@ -193,7 +193,7 @@
 	// You may compose actions using different methods:
 
 
-	// #### Action chaining
+	// #### Action chaining (aka ">>>")
 	// add another action to execute after completion
 	// Consider following actions:
 	// <pre>
@@ -227,7 +227,7 @@
 			}, a.complete)
 		}
 
-	// #### Simultaneous Actions
+	// #### Simultaneous Actions (aka "&&&")
 	// Ok this is cool, but sometimes you want to do two concurrent things with
 	// the same event, just as you did with javascript events and callbacks !
 	//
@@ -254,6 +254,31 @@
 		}
 
 		A.prototype.zip = A.prototype.and
+
+		// TODO: find a name
+		// (***) :: SF b c -> SF b’ c’ -> SF (b,b’) (c,c’)
+		A.prototype['***'] = function(a){
+			return this.fst().then(this)
+				.and(this.snd().then(a))
+		}
+
+		A.prototype.first = function(ƒ){
+			return this.map(function(v){
+				return [ƒ(v[0]), v[1]]
+			})
+		}
+
+		A.prototype.fst = function(){
+			return this.map(function(v){
+				return v[0]
+			})
+		}
+		
+		A.prototype.snd = function(){
+			return this.map(function(v){
+				return v[1]
+			})
+		}
 
 	// #### A step forward
 	// You may even combine them
