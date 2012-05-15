@@ -1,22 +1,26 @@
 $(function(){
 	"use strict"
 	
-	// Should be part of MVV
-	//TODO
+	// Should be part of MVC
+	// åTODO
 	var DummyView = function(tmpl, parent, binder){ 
 		var b = binder || noop
-		return Effect(function(model){
+		return Call(function(model){
 				function D(model){
 					this._t = model
 					this.tmpl = tmpl
 					this.el = this.render().appendTo(parent)
+					b(this.el, model)
 				}
 				D.prototype = {
 					update: function(){ this.el.replaceWith(this.render()) },
 					render: function(){ return $(this.tmpl(this._t)) },
 					del : function() { this.el.remove() }
 				}
-				new D(model)
+				var d = new D(model)
+				return Call(function(v){
+					d.update.call(d, v)
+				})
 			})
 	 }
 	
@@ -30,6 +34,7 @@ $(function(){
 			return Form._input.val()
 		})
 	}
+	
 	Form.cv = Form.value.then(Form.clear)
 
 	Form.init = When(function(next){ Form._input.keydown(next) })
@@ -48,21 +53,26 @@ $(function(){
 		})
 
 
-	var Todo = DummyView(_.template($('#item-template').html()), '#todo-list', function(rendered){
-		When(function(n){rendered.find('.todo-destroy').click(n)})
-			.await(this._t.delete)
+	var Todo = DummyView(_.template($('#item-template').html()), '#todo-list', function(rendered, model){
+		When(function(n){ rendered.find('.todo-destroy').click(n) })
+			//.await(this._t.delete)
+			.await(Effect(function(v){
+				model.text = "deleted"
+			}))
 			.subscribe()
 			// TODO: bind deletion
 	})
 	var Debug = DummyView(_.template('<li><%=text%></li>'), '#debug')
 
-	var Sub = Effect(function(r){ 
-		r[1].subscribe()
+	var Sub = Effect(function(as){
+		var model = as[0],
+			views = as[1]
+		model.await(views[0].and(views[1])).subscribe()
 	})
 
 	Form.init
-		.await(Id.and(Todo).and(Debug))
-		.await(Sub)
+		.await(Id.and(Todo.and(Debug))
+			.then(Sub))
 		.subscribe()
 	
 
