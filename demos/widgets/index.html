@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>widzets</title>
+		<style type="text/css" media="screen">
+			html, body{
+				height: 100%;
+				width: 100%;
+			}
+		</style>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="https://raw.github.com/documentcloud/underscore/master/underscore.js" type="text/javascript" charset="utf-8"></script>
+		<script src="http://mustache.github.com/extras/mustache.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
+
+		<script type="text/javascript" charset="utf-8">
+		/**
+		* pushable reactives
+		*/
+		function PushR(){
+			var Q = function(){ this._n = function(){throw "NotYetSubscribed"} }
+			Q.prototype.ƒ = function(next){
+				this._n = next
+			}
+			Q.prototype.push = function(value){ this._n(value) }
+	
+			var q = new Q(),
+				R = When(function(n){q.ƒ(n)}) // TODO: why is 'this' dereferenced, might be the same issue with jQuery
+
+			var oldSub = R.subscribe
+			R.subscribe = function(){
+				oldSub.call(this)
+			}
+			R.push = function(v){
+				q.push(v)
+			}
+			return R
+		}
+		</script>
+
+		<script type="text/playmate-wx" data-for="Autocomplete" charset="utf-8">
+		<ul data-input="{{id}}">
+			{{#results}}
+				<li><a href="#">{{value}}</a></li>
+			{{/results}}
+		</ul>
+		</script>
+		
+		<script type="text/javascript" charset="utf-8">
+		"use strict"
+			function Autocomplete(input){
+				var out = {
+					fetched: PushR(),
+					selected: PushR()
+				}
+
+				var _$in = $('#' + input),
+					_tmpl = $('[data-for=Autocomplete]').html(),
+			 	    _template = function(data){ 
+						var t = $(Mustache.to_html(_tmpl, data))
+
+						When(function(n){
+								t.find('a').click(n)
+							})
+							.await(Effect(function(v){
+								out.selected.push(v.target.innerHTML)
+							}))
+							.subscribe()
+
+						return t
+					},
+
+					// Low level events -- Private
+					_events = {
+						change: function(n){ _$in.keydown(n) },
+					},
+
+					// exposed API
+					actions = {
+						reset: Effect(function(){ _$in.val('') }),
+						display: Effect(function(vs){
+							$("[data-input=" + input + "]").remove()
+							$(document.body).append(_template({id: input, results: vs}))
+						}),
+						fetch: Action(function(v, n){
+							var data = _("My money's in that office, right? If she start giving me some bullshit about it ain't there, and we got to go someplace else and get it, I'm gonna shoot you in the head then and there. Then I'm gonna shoot that bitch in the kneecaps, find out where my goddamn money is. She gonna tell me too. Hey, look at me when I'm talking to you, motherfucker".split(/\.|,/)).map(function(v){ return { value: v.trim() } })
+
+							out.fetched.push(data)
+
+							n(data)
+						})
+					},
+
+					// User interactions
+					ui = [
+						When(_events.change)
+							.await(
+								actions.fetch
+								.then(actions.display))
+					]
+
+				return {
+					in: actions,
+					out: out,
+					subscribe: function(){
+						_(ui).each(function(r){ r.subscribe() })
+					}
+				}
+			}
+
+			function Details(parent){
+				var out = {
+						showed: PushR()
+					},
+					_$parent = $(parent),
+					actions = {
+						show: Effect(function(v){ 
+							_$parent.html('<strong>You\'ve selected:</strong> "' + v + '"')
+							out.showed.push(v)
+						})
+					}
+
+				return {
+					in: actions,
+					out: out,
+					subscribe: noop
+				}
+
+			}
+		</script>
+		
+		<script type="text/javascript" charset="utf-8">
+			// @see Fudgets
+			"use strict"
+			$(function(){
+
+				// Create a new component reusing existing components
+				var SearchBox = function(input, output){
+					var auto = Autocomplete(input)
+
+					function click(next){ $('#clear').click(next) }
+					When(click)
+						.await(auto.in.reset)
+						.subscribe()
+
+					auto.out.fetched
+						.await(Log)
+						.subscribe()
+
+					auto.subscribe()
+				
+					var details = Details(output)
+					auto.out.selected
+						.await(details.in.show)
+						.subscribe()
+				
+					details.subscribe()
+					
+				}
+				
+				SearchBox('autocomplete', '#details')
+
+			})
+		</script>
+
+	</head>
+	<body>
+		<div style="width: 1010px; margin: auto">
+			<div style="width: 500px; float: right">
+				<h2>results</h2>
+				<p id="details"></p>
+			</div>
+			<p class="demo" style="width: 500px;">
+				<h2>Search</h2>
+				<input type="text" name="autocomplete" value="" id="autocomplete">
+				<input type="button" name="" value="clear" id="clear">
+			</p>
+		</div>
+	</body>
+</html>
