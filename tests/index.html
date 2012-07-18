@@ -2,15 +2,93 @@
 <html>
 	<head>
 		<title>procrastination.js Tests Suites</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<style type="text/css" media="screen">
-			html, body{
-				height: 100%;
-				width: 100%;
-			}
+html,body {
+	height:100%;
+	margin: 0;
+	padding: 0;
+}
+body {
+	background: #444;
+	font: 19px "Myriad Pro", sans-serif;
+	color: #333;
+	color: rgba(0,0,0,.5);
+}
+
+body.success {
+	background: #6da707;
+}
+body.success #wrapper {
+	background: #79bc04;
+}
+
+body.fail {
+	background: #c00f0f;
+}
+body.fail #wrapper {
+	background: #d21010;
+}
+
+
+#wrapper {
+	margin: 0 ;
+	width: 800px;
+	background: #555;
+	min-height: 100%;
+	box-shadow: 0 0 20px rgba(0,0,0,.2);
+}
+h1 {
+	margin: 0;
+	padding: 30px;
+	font-size: 60px;
+	text-shadow: 1px 1px 0 rgba(255,255,255, .7), 0 2px 6px rgba(0,0,0,.4);
+	color: #fff;
+}
+
+ul, li {
+	margin: 0;
+	padding: 0;
+	list-style-type:none;
+}
+ul {
+	border-top: 1px solid rgba(0,0,0,.1);
+}
+li {
+	padding: 15px 30px;
+	box-sizing: border-box;
+	width: 33.3333%;
+	float: left;
+	border-bottom: 1px solid rgba(0,0,0,.1);
+	border-right: 1px solid rgba(0,0,0,.1);
+}
+li:nth-child(3n) {
+	border-right: none;
+}
+
+li:after {
+	color: #fff;
+	text-shadow: 1px 1px 0 rgba(0,0,0,.3);
+	float: right;
+}
+
+li.success {
+	background: #79bc04;
+}
+li.success:after {
+	content: '✔';
+}
+
+li.fail {
+	background: #d21010;
+}
+li.fail:after {
+	content: '✘';
+}
+
 		</style>
 		<script src="lib/zepto.js" type="text/javascript" charset="utf-8"></script>
-		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>\
+		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
 		<script type="text/javascript" charset="utf-8">
 			$(function(){
 				var assert = function(p){
@@ -210,13 +288,15 @@
 							}))
 				}
 				
+				var list = $('ul'), errors = 0
 				// Test Runner for Reactives
 				for(t in RTestSuite){
 					try{
 						RTestSuite[t].subscribe()
-						console.log(t + ':\t\t\tSUCCESS')
+						$('<li/>').html(t).addClass('success').appendTo(list)
 					} catch(e){
-						console.log(t + ':\t\t\tFAIL -> ' + e)
+						errors++
+						$('<li/>').html(t).addClass('fail').appendTo(list)
 					}
 				}
 				
@@ -224,9 +304,10 @@
 				for(t in ATestSuite){
 					try{
 						ATestSuite[t]()
-						console.log(t + ':\t\t\tSUCCESS')
+						$('<li/>').html(t).addClass('success').appendTo(list)
 					} catch(e){
-						console.log(t + ':\t\t\tFAIL -> ' + e)
+						errors++
+						$('<li/>').html(t).addClass('fail').appendTo(list)
 					}
 				}
 				
@@ -234,16 +315,24 @@
 				for(t in MTestSuite){
 					try{
 						MTestSuite[t].subscribe()
-						console.log(t + ':\t\t\tSUCCESS')
+						$('<li/>').html(t).addClass('success').appendTo(list)
 					} catch(e){
-						console.log(t + ':\t\t\tFAIL -> ' + e)
+						errors++
+						$('<li/>').html(t).addClass('fail').appendTo(list)
 					}
 				}
+
+				$('body').addClass( errors>0?'fail':'success' )
 			})
 		</script>
 	</head>
 	<body>
-		<p class="demo">
-		</p>
+		<div id="wrapper">
+			<header>
+				<h1>Running tests.</h1>
+			</header>
+			<ul>
+			</ul>
+		</div>
 	</body>
 </html>
