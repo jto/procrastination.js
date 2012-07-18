@@ -161,6 +161,7 @@
 							.await(Assert(function(v){
 								return v === "OK"
 							})),
+
 					"value": 
 						Now.mapVal(42)
 							.match(Match
@@ -169,9 +170,40 @@
 							.await(Assert(function(v){
 								return v === "OK"
 							})),
+
 					"dft": 
 						Now.match(Match
 								.value(42, OK)
+								.dft(NOK))
+							.await(Assert(function(v){
+								return v === "NOK"
+							})),
+
+					"on": 
+						Now.mapVal({status: 200, responseText: "OK"})
+							.on(function(v){
+								return v.status
+							})
+							.match(Match
+								.value(200, Id)
+								.dft(NOK))
+							.await(Assert(function(v){
+								return v.responseText === "OK"
+							})),
+
+					"array-same": 
+						Now.mapVal([1,2,3])
+							.match(Match
+								.array([1,2,3], OK)
+								.dft(NOK))
+							.await(Assert(function(v){
+								return v === "OK"
+							})),
+
+					"array-diff": 
+						Now.mapVal([3,2,1])
+							.match(Match
+								.array([1,2,3], OK)
 								.dft(NOK))
 							.await(Assert(function(v){
 								return v === "NOK"
