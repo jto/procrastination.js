@@ -1,11 +1,4 @@
 /**
- * # Procrastination.js
- *
- * Procrastination.js is a ...
- *
- */
-
-/**
 *
 *     ________________________________________________________________________
 *   /                Copyright 2012 Julien Tournay                             \
