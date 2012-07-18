@@ -68,6 +68,10 @@
 				background: #9691FF;
 			}
 			
+			.timeline span.spot.blink.filtered{
+				background: #FF665A;
+			}
+			
 			.timeline span.blink{
 				background: red;
 			}
@@ -139,11 +143,11 @@
 					function(){
 						var anims = animations(2)
 						When(clickToFive(2))
-							.await(anims.Show)
+							.await(anims.Pop)
 							.filter(function(v){
 								return !(v % 2)
 							})
-							.await(anims.Pop)
+							.await(anims.Show)
 							.subscribe()
 					},
 
