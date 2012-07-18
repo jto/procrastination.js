@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>procrastination.js Tests Suites</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<style type="text/css" media="screen">
+			html, body{
+				height: 100%;
+				width: 100%;
+			}
+		</style>
+		<script src="lib/zepto.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>\
+		<script type="text/javascript" charset="utf-8">
+			$(function(){
+				var Assert = function(ƒ){
+					return Action(function(v, n){
+						if(!ƒ(v)) throw 'Assertion Failed'
+						n(v)
+					})
+				}
+
+				var Now = When(function(n){ n('REDEEMED') })
+				var TenTimes = When(function(n){
+					for(var i = 0; i < 10; i++) n(i)
+				})
+				var Reversed = When(function(n){
+					for(var i = 10; i > 0; i--) n(i)
+				})
+				
+				var RTestSuite = {
+					"Basic": 
+						Now.await(
+							Assert(function(v){
+									return v === "REDEEMED"
+							})),
+
+					"Map": 
+						Now.map(function(v){
+								return v + "OK"
+							})
+							.await(
+								Assert(function(v){
+										return v === "REDEEMEDOK"
+							})),
+
+					"MapVal":
+						Now.mapVal(42)
+							.await(
+								Assert(function(v){
+									return v === 42
+							})),
+
+					"flatMap + unit":
+						Now.flatmap(function(v){
+								return this.unit('pasteque')
+							})
+							.await(Assert(function(v){
+								return v == 'pasteque'
+							})),
+							
+					"Drop 1":
+						TenTimes
+							.drop(1)
+							.await(
+								Assert(function(v){
+									return v > 0
+							})),
+
+					"Drop 9":
+						TenTimes
+							.drop(9)
+							.await(
+								Assert(function(v){
+									return v > 8
+							})),
+							
+					"Group":
+						TenTimes
+							.group(10)
+							.await(
+								Assert(function(v){
+									return (v.constructor == Array) && (v.join(",") == "0,1,2,3,4,5,6,7,8,9")
+							})),
+
+					"Sliding":
+						TenTimes
+							.sliding(3)
+							.group(10)
+							.await(
+								Assert(function(v){
+									return (v.constructor == Array) && (v.join(",") == "0,0,1,0,1,2,1,2,3,2,3,4,3,4,5,4,5,6,5,6,7,6,7,8,7,8,9")
+							})),
+					
+					/*	// TODO	
+					"Zip":
+						TenTimes
+							.zip(Reversed)
+							.await(
+								Assert(function(v){
+									console.log(v)
+									return false
+							})),
+						*/
+				}
+				
+				
+				
+				// Test Runner
+				for(t in RTestSuite){
+					try{
+						RTestSuite[t].subscribe()
+						console.log(t + ':\t\t\tSUCCESS')
+					} catch(e){
+						console.log(t + ':\t\t\tFAIL -> ' + e)
+					}
+				}
+			})
+		</script>
+	</head>
+	<body>
+		<p class="demo">
+		</p>
+	</body>
+</html>
