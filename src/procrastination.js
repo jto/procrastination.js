@@ -714,6 +714,7 @@
 		})
 	}
 	global.Id = Call(identity)
+	global.Val = function(v){ return Call(function(){return v}) }
 	global.Log = Call(function(v){
 		console.log('-- %o', v)
 		return v

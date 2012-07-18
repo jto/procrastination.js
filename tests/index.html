@@ -13,9 +13,12 @@
 		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>\
 		<script type="text/javascript" charset="utf-8">
 			$(function(){
+				var assert = function(p){
+					if(!p) throw 'Assertion Failed'
+				}
 				var Assert = function(ƒ){
 					return Action(function(v, n){
-						if(!ƒ(v)) throw 'Assertion Failed'
+						assert(ƒ(v))
 						n(v)
 					})
 				}
@@ -102,14 +105,103 @@
 									return false
 							})),
 						*/
+						
+						"Filter":
+							TenTimes
+								.filter(function(v){
+									return v > 4
+								})
+								.group(10)
+								.await(
+									Assert(function(v){
+										return (v.constructor == Array) && (v.join(",") == "5,6,7,8,9")
+								}))
+				}
+
+				var ATestSuite = {
+					"Basic": function(){
+						Assert(function(v){
+							return v === 42
+						})._do(42)
+					},
+					
+					"Then": function(){
+						Id.then(Action(function(v, n){
+							n(v * 2)
+						}))
+						.then(Assert(function(v){
+							return v === 84
+						}))
+						._do(42)
+					},
+					
+					"And": function(){
+						Id.and(Action(function(v, n){
+							n(v * 2)
+						}))
+						.then(Assert(function(v){
+							return v.join(",") == "42,84"
+						}))
+						._do(42)
+					}
 				}
 				
 				
+				var OK = Val("OK")
+				var NOK = Val("NOK")
+
+				var MTestSuite = {
+					"test": 
+						Now.mapVal(42)
+							.match(Match
+								.test(function(v){
+									return v === 42
+								}, OK)
+								.dft(NOK))
+							.await(Assert(function(v){
+								return v === "OK"
+							})),
+					"value": 
+						Now.mapVal(42)
+							.match(Match
+								.value(42, OK)
+								.dft(NOK))
+							.await(Assert(function(v){
+								return v === "OK"
+							})),
+					"dft": 
+						Now.match(Match
+								.value(42, OK)
+								.dft(NOK))
+							.await(Assert(function(v){
+								return v === "NOK"
+							}))
+				}
 				
-				// Test Runner
+				// Test Runner for Reactives
 				for(t in RTestSuite){
 					try{
 						RTestSuite[t].subscribe()
+						console.log(t + ':\t\t\tSUCCESS')
+					} catch(e){
+						console.log(t + ':\t\t\tFAIL -> ' + e)
+					}
+				}
+				
+				// Test Runner for Reactives
+				for(t in ATestSuite){
+					try{
+						ATestSuite[t]()
+						console.log(t + ':\t\t\tSUCCESS')
+					} catch(e){
+						console.log(t + ':\t\t\tFAIL -> ' + e)
+					}
+				}
+				
+				// Test Runner for Reactives
+				for(t in MTestSuite){
+					try{
+						MTestSuite[t].subscribe()
 						console.log(t + ':\t\t\tSUCCESS')
 					} catch(e){
 						console.log(t + ':\t\t\tFAIL -> ' + e)
