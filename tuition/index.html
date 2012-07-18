@@ -45,7 +45,8 @@
 
 			.timeline span{ display: block; }
 
-			.timeline span.spot{
+			.timeline .spot,
+			.timeline .group{
 				position: relative;
 				height: 40px;
 				width: 40px;
@@ -58,11 +59,36 @@
 				font-size: 20px;
 				padding-left: 15px;
 				-webkit-transition: background 0.2s;
-			}
-			
-			.timeline:not(.squarred) span.spot{
 				border-radius: 20px;
 			}
+			.timeline .spot:last-of-type,
+			.timeline .group:last-of-type{ margin-right: 0 }
+			
+			
+			.timeline .group{
+				position: relative;
+				-webkit-transition: background 0.2s;
+			}
+			
+			.timeline .group.expanded {
+				background: transparent;
+			}
+
+			.timeline .group.expanded .spot{ opacity:1; }
+			.timeline .group .spot{
+				opacity: 0.2;
+				position: absolute;
+				top: 12px;
+				left: 0;
+				opacity: 0;
+				-webkit-transform: translateX(0px);
+				font-size: 14px;
+				padding-left: 13px;
+				-webkit-transition: opacity, -webkit-transform 0.2s;
+			}
+			
+			.timeline .group.expanded .spot:first-child{ -webkit-transform: translateX(-25px); }
+			.timeline .group.expanded .spot:last-child{ -webkit-transform: translateX(25px); }
 			
 			.timeline span.spot.filtered{
 				background: #9691FF;
@@ -75,7 +101,8 @@
 			.timeline span.blink{
 				background: red;
 			}
-			
+
+			/*
 			.timeline span.time{
 				border-radius: 0 10px 10px 0;
 				height: 15px;
@@ -88,10 +115,7 @@
 				background: -webkit-linear-gradient(right, rgba(255,0,0,255) 0%, rgba(255,0,0,0) 100%);
 				z-index: 100;
 			}
-			
-		
-
-			.timeline span.spot:last-of-type{margin-right: 0}
+			*/
 		</style>
 		<script src="../lib/zepto.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
@@ -101,7 +125,8 @@
 				var animations = function(i){
 					var container = $('.anim-' + i),
 							display = container.find('.display'),
-							spots = container.find('.timeline .spot')
+							spots = container.find('.timeline .spot'),
+							groups = container.find('.timeline .group')
 					return {
 						Pop: Effect(function(i){
 							var s = $(spots.get(i))
@@ -113,6 +138,10 @@
 							display.addClass('blink')
 							display.text(i)
 							setTimeout(function(){display.removeClass('blink')}, 500)
+						}),
+						
+						Expand: Effect(function(i){
+							$(groups.get(i)).addClass('expanded')
 						})
 					}
 				}
@@ -160,6 +189,25 @@
 							})
 							.await(anims.Show)
 							.subscribe()
+					},
+					
+					function(){
+						var anims = animations(4)
+						var d = function(v){
+							return function(n){
+								n(v + 'a')
+								setTimeout(function(){
+									n(v + 'b')
+								}, 300)
+							}
+						}
+						When(clickToFive(4))
+							.await(anims.Expand)
+							.flatmap(function(v){
+								return When(d(v))
+							})
+							.await(anims.Show)
+							.subscribe()
 					}
 			]
 			
@@ -170,56 +218,90 @@
 		</script>
 	</head>
 	<body>
-		
-		<!-- Base -->
-		<div class="anim-1">
-			<h2>Reactive programming</h2>
-			<div class="display">-</div>
-			<div class="anim-box">
-				<div class="timeline">
-					<!-- <span class="time"></span> -->
-					<span class="spot">0</span>
-					<span class="spot">1</span>
-					<span class="spot">2</span>
-					<span class="spot">3</span>
-					<span class="spot">4</span>
+		<article>
+			<h1>When</h1>
+			<!-- Base -->
+			<div class="anim-1">
+				<h2>Reactive programming</h2>
+				<div class="display">-</div>
+				<div class="anim-box">
+					<div class="timeline">
+						<!-- <span class="time"></span> -->
+						<span class="spot">0</span>
+						<span class="spot">1</span>
+						<span class="spot">2</span>
+						<span class="spot">3</span>
+						<span class="spot">4</span>
+					</div>
 				</div>
+				<input type="button" name="start" value="POP!" id="start-1">
 			</div>
-			<input type="button" name="start" value="POP!" id="start-1">
-		</div>
-		
-		<!-- Filtered -->
-		<div class="anim-2">
-			<h2>Filtered</h2>
-			<div class="display">-</div>
-			<div class="anim-box">
-				<div class="timeline">
-					<!-- <span class="time"></span> -->
-					<span class="spot">0</span>
-					<span class="spot filtered">1</span>
-					<span class="spot">2</span>
-					<span class="spot filtered">3</span>
-					<span class="spot">4</span>
+
+			<!-- Filtered -->
+			<div class="anim-2">
+				<h2>Filtered</h2>
+				<div class="display">-</div>
+				<div class="anim-box">
+					<div class="timeline">
+						<!-- <span class="time"></span> -->
+						<span class="spot">0</span>
+						<span class="spot filtered">1</span>
+						<span class="spot">2</span>
+						<span class="spot filtered">3</span>
+						<span class="spot">4</span>
+					</div>
 				</div>
+				<input type="button" name="start" value="POP!" id="start-2">
 			</div>
-			<input type="button" name="start" value="POP!" id="start-2">
-		</div>
-		
-		<!-- Map -->
-		<div class="anim-3">
-			<h2>Map</h2>
-			<div class="display">-</div>
-			<div class="anim-box">
-				<div class="timeline">
-					<!-- <span class="time"></span> -->
-					<span class="spot">0</span>
-					<span class="spot">1</span>
-					<span class="spot">2</span>
-					<span class="spot">3</span>
-					<span class="spot">4</span>
+
+			<!-- Map -->
+			<div class="anim-3">
+				<h2>Map</h2>
+				<div class="display">-</div>
+				<div class="anim-box">
+					<div class="timeline">
+						<!-- <span class="time"></span> -->
+						<span class="spot">0</span>
+						<span class="spot">1</span>
+						<span class="spot">2</span>
+						<span class="spot">3</span>
+						<span class="spot">4</span>
+					</div>
 				</div>
+				<input type="button" name="start" value="POP!" id="start-3">
 			</div>
-			<input type="button" name="start" value="POP!" id="start-3">
-		</div>
+
+			<!-- Map -->
+			<div class="anim-4">
+				<h2>flatmap</h2>
+				<div class="display">-</div>
+				<div class="anim-box">
+					<div class="timeline">
+						<!-- <span class="time"></span> -->
+						<div class="group">
+							<span class="spot">0a</span>
+							<span class="spot">0b</span>
+						</div>
+						<div class="group">
+							<span class="spot">1a</span>
+							<span class="spot">1b</span>
+						</div>
+						<div class="group">
+							<span class="spot">2a</span>
+							<span class="spot">2b</span>
+						</div>
+						<div class="group">
+							<span class="spot">3a</span>
+							<span class="spot">3b</span>
+						</div>
+						<div class="group">
+							<span class="spot">4a</span>
+							<span class="spot">4b</span>
+						</div>
+					</div>
+				</div>
+				<input type="button" name="start" value="POP!" id="start-4">
+			</div>
+		</article>
 	</body>
 </html>
