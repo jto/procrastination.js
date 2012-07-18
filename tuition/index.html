@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>procrastination.js Tests Suites</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+		<style type="text/css" media="screen">
+			*{
+				box-sizing: border-box;
+				font-family: Arial;
+			}
+			html, body{
+				height: 100%;
+				width: 100%;
+				padding: 30px;
+			}
+			
+			.anim-box{
+				padding: 40px;
+				border: solid 1px #c6c6c6;
+			}
+			
+			.display{
+				float: right;
+				display: block;
+				height: 80px;
+				line-height: 80px;
+				width: 80px;
+				margin: 8px;
+				font-size: 60px;
+				font-weight: bold;
+				text-align: center;
+				opacity: 0.1;
+				-webkit-transition: opacity 0.2s;
+			}
+			
+			.display.blink{opacity:0.8}
+			
+			.timeline{
+				width: 800px;
+				height: 15px;
+				background: #4846DD;
+				border-radius: 10px;
+				position: relative;
+			}
+
+			.timeline span{ display: block; }
+
+			.timeline span.spot{
+				position: relative;
+				height: 40px;
+				width: 40px;
+				background: #4846DD;
+				float: left;
+				margin-top: -13px;
+				margin-right: 150px;
+				color: white;
+				line-height: 40px;
+				font-size: 20px;
+				padding-left: 15px;
+				-webkit-transition: background 0.2s;
+			}
+			
+			.timeline:not(.squarred) span.spot{
+				border-radius: 20px;
+			}
+			
+			.timeline span.spot.filtered{
+				background: #9691FF;
+			}
+			
+			.timeline span.blink{
+				background: red;
+			}
+			
+			.timeline span.time{
+				border-radius: 0 10px 10px 0;
+				height: 15px;
+				width: 40px;
+				background: red;
+				position: absolute;
+				top: 0;
+				left: 0;
+				-webkit-transform: translateX(0);
+				background: -webkit-linear-gradient(right, rgba(255,0,0,255) 0%, rgba(255,0,0,0) 100%);
+				z-index: 100;
+			}
+			
+		
+
+			.timeline span.spot:last-of-type{margin-right: 0}
+		</style>
+		<script src="../lib/zepto.js" type="text/javascript" charset="utf-8"></script>
+		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript" charset="utf-8">
+			$(function(){
+				
+				var animations = function(i){
+					var container = $('.anim-' + i),
+							display = container.find('.display'),
+							spots = container.find('.timeline .spot')
+					return {
+						Pop: Effect(function(i){
+							var s = $(spots.get(i))
+							s.addClass('blink')
+							setTimeout(function(){s.removeClass('blink')}, 500)
+						}),
+						
+						Show: Effect(function(i){
+							display.addClass('blink')
+							display.text(i)
+							setTimeout(function(){display.removeClass('blink')}, 500)
+						})
+					}
+				}
+				
+				var clickToFive = function(i){
+					var gimmeFive = function(n){
+						var c = function(i){setTimeout(function(){
+							n(i)
+							if(i < 4) c(i+1)
+						}, 600)}
+						c(0)
+					}
+					return function(n){ 
+							$('#start-' + i).bind('click', function(){
+								gimmeFive(n)
+							})
+						}
+				}
+				
+				var as = [
+					function(){
+						var anims = animations(1)
+						When(clickToFive(1))
+							.await(anims.Show.and(anims.Pop))
+							.subscribe()
+					},
+					
+					function(){
+						var anims = animations(2)
+						When(clickToFive(2))
+							.await(anims.Show)
+							.filter(function(v){
+								return !(v % 2)
+							})
+							.await(anims.Pop)
+							.subscribe()
+					},
+
+					function(){
+						var anims = animations(3)
+						When(clickToFive(3))
+							.await(anims.Pop)
+							.map(function(v){
+								return v * 2
+							})
+							.await(anims.Show)
+							.subscribe()
+					}
+			]
+			
+			for(var a in as)
+				as[a]()
+
+			})
+		</script>
+	</head>
+	<body>
+		
+		<!-- Base -->
+		<div class="anim-1">
+			<h2>Reactive programming</h2>
+			<div class="display">-</div>
+			<div class="anim-box">
+				<div class="timeline">
+					<!-- <span class="time"></span> -->
+					<span class="spot">0</span>
+					<span class="spot">1</span>
+					<span class="spot">2</span>
+					<span class="spot">3</span>
+					<span class="spot">4</span>
+				</div>
+			</div>
+			<input type="button" name="start" value="POP!" id="start-1">
+		</div>
+		
+		<!-- Filtered -->
+		<div class="anim-2">
+			<h2>Filtered</h2>
+			<div class="display">-</div>
+			<div class="anim-box">
+				<div class="timeline">
+					<!-- <span class="time"></span> -->
+					<span class="spot">0</span>
+					<span class="spot filtered">1</span>
+					<span class="spot">2</span>
+					<span class="spot filtered">3</span>
+					<span class="spot">4</span>
+				</div>
+			</div>
+			<input type="button" name="start" value="POP!" id="start-2">
+		</div>
+		
+		<!-- Map -->
+		<div class="anim-3">
+			<h2>Map</h2>
+			<div class="display">-</div>
+			<div class="anim-box">
+				<div class="timeline">
+					<!-- <span class="time"></span> -->
+					<span class="spot">0</span>
+					<span class="spot">1</span>
+					<span class="spot">2</span>
+					<span class="spot">3</span>
+					<span class="spot">4</span>
+				</div>
+			</div>
+			<input type="button" name="start" value="POP!" id="start-3">
+		</div>
+	</body>
+</html>
