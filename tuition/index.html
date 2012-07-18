@@ -58,7 +58,7 @@
 				line-height: 40px;
 				font-size: 20px;
 				padding-left: 15px;
-				-webkit-transition: background 0.2s;
+				-webkit-transition: background, -webkit-transform 0.2s;
 				border-radius: 20px;
 			}
 			.timeline .spot:last-of-type,
@@ -98,24 +98,13 @@
 				background: #FF665A;
 			}
 			
-			.timeline span.blink{
-				background: red;
+			.timeline .spot.blink{
+				background: #F22C20;
 			}
-
-			/*
-			.timeline span.time{
-				border-radius: 0 10px 10px 0;
-				height: 15px;
-				width: 40px;
-				background: red;
-				position: absolute;
-				top: 0;
-				left: 0;
-				-webkit-transform: translateX(0);
-				background: -webkit-linear-gradient(right, rgba(255,0,0,255) 0%, rgba(255,0,0,0) 100%);
-				z-index: 100;
+			
+			.timeline .spot.scale{
+				-webkit-transform: scale(1.5);
 			}
-			*/
 		</style>
 		<script src="../lib/zepto.js" type="text/javascript" charset="utf-8"></script>
 		<script src="../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
@@ -128,20 +117,39 @@
 							spots = container.find('.timeline .spot'),
 							groups = container.find('.timeline .group')
 					return {
-						Pop: Effect(function(i){
+						Pop: Action(function(i, n){
 							var s = $(spots.get(i))
 							s.addClass('blink')
-							setTimeout(function(){s.removeClass('blink')}, 500)
+							setTimeout(function(){
+								s.removeClass('blink')
+								n(i)
+							}, 500)
 						}),
 						
-						Show: Effect(function(i){
+						Scale: Action(function(i, n){
+							var s = $(spots.get(i))
+							s.addClass('scale')
+							setTimeout(function(){
+								s.removeClass('scale')
+								n(i)
+							}, 500)
+						}),
+						
+						Show: Action(function(i, n){
 							display.addClass('blink')
 							display.text(i)
-							setTimeout(function(){display.removeClass('blink')}, 500)
+							setTimeout(function(){
+								display.removeClass('blink')
+								n(i)
+							}, 500)
 						}),
 						
-						Expand: Effect(function(i){
-							$(groups.get(i)).addClass('expanded')
+						Expand: Effect(function(i, n){
+							var group = $(groups.get(i))
+							group.addClass('expanded')
+							setTimeout(function(){
+								n(i)
+							}, 500)
 						})
 					}
 				}
@@ -165,29 +173,27 @@
 					function(){
 						var anims = animations(1)
 						When(clickToFive(1))
-							.await(anims.Show.and(anims.Pop))
+							.await(anims.Scale)
 							.subscribe()
 					},
 					
 					function(){
 						var anims = animations(2)
 						When(clickToFive(2))
-							.await(anims.Pop)
 							.filter(function(v){
 								return !(v % 2)
 							})
-							.await(anims.Show)
+							.await(anims.Scale)
 							.subscribe()
 					},
 
 					function(){
 						var anims = animations(3)
 						When(clickToFive(3))
-							.await(anims.Pop)
+							.await(anims.Scale)
 							.map(function(v){
 								return v * 2
 							})
-							.await(anims.Show)
 							.subscribe()
 					},
 					
@@ -206,7 +212,20 @@
 							.flatmap(function(v){
 								return When(d(v))
 							})
-							.await(anims.Show)
+							.subscribe()
+					},
+					
+					function(){
+						var anims = animations(5)
+						When(clickToFive(5))
+							.await(anims.Pop.and(anims.Scale))
+							.subscribe()
+					},
+					
+					function(){
+						var anims = animations(6)
+						When(clickToFive(6))
+							.await(anims.Scale.then(anims.Pop))
 							.subscribe()
 					}
 			]
@@ -223,7 +242,6 @@
 			<!-- Base -->
 			<div class="anim-1">
 				<h2>Reactive programming</h2>
-				<div class="display">-</div>
 				<div class="anim-box">
 					<div class="timeline">
 						<!-- <span class="time"></span> -->
@@ -240,7 +258,6 @@
 			<!-- Filtered -->
 			<div class="anim-2">
 				<h2>Filtered</h2>
-				<div class="display">-</div>
 				<div class="anim-box">
 					<div class="timeline">
 						<!-- <span class="time"></span> -->
@@ -257,15 +274,14 @@
 			<!-- Map -->
 			<div class="anim-3">
 				<h2>Map</h2>
-				<div class="display">-</div>
 				<div class="anim-box">
 					<div class="timeline">
 						<!-- <span class="time"></span> -->
 						<span class="spot">0</span>
-						<span class="spot">1</span>
 						<span class="spot">2</span>
-						<span class="spot">3</span>
 						<span class="spot">4</span>
+						<span class="spot">6</span>
+						<span class="spot">8</span>
 					</div>
 				</div>
 				<input type="button" name="start" value="POP!" id="start-3">
@@ -274,7 +290,6 @@
 			<!-- Map -->
 			<div class="anim-4">
 				<h2>flatmap</h2>
-				<div class="display">-</div>
 				<div class="anim-box">
 					<div class="timeline">
 						<!-- <span class="time"></span> -->
@@ -302,6 +317,42 @@
 				</div>
 				<input type="button" name="start" value="POP!" id="start-4">
 			</div>
+		</article>
+		
+		
+		<article>
+			<h1>Action</h1>
+			<!-- Base -->
+			<div class="anim-5">
+				<h2>And</h2>
+				<div class="anim-box">
+					<div class="timeline">
+						<!-- <span class="time"></span> -->
+						<span class="spot">0</span>
+						<span class="spot">1</span>
+						<span class="spot">2</span>
+						<span class="spot">3</span>
+						<span class="spot">4</span>
+					</div>
+				</div>
+				<input type="button" name="start" value="POP!" id="start-5">
+			</div>
+			
+			<div class="anim-6">
+				<h2>Then</h2>
+				<div class="anim-box">
+					<div class="timeline">
+						<!-- <span class="time"></span> -->
+						<span class="spot">0</span>
+						<span class="spot">1</span>
+						<span class="spot">2</span>
+						<span class="spot">3</span>
+						<span class="spot">4</span>
+					</div>
+				</div>
+				<input type="button" name="start" value="POP!" id="start-6">
+			</div>
+			
 		</article>
 	</body>
 </html>
