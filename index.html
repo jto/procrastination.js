@@ -1,46 +1,135 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Procrastination.js</title>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<link rel="stylesheet" href="style.css" type="text/css" media="screen" charset="utf-8">
-		<script src="procrastination.js" type="text/javascript" charset="utf-8"></script>
-		<script src="home.js" type="text/javascript" charset="utf-8"></script>
-	</head>
-	<body>
+<head>
+	<title>Procrastination.js</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="stylesheet" href="style.css" type="text/css" media="screen" charset="utf-8">
+	<script src="lib/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="lib/procrastination.js" type="text/javascript" charset="utf-8"></script>
+	
+	<script type="text/javascript" charset="utf-8">
+	$(function(){
+		var ƒs = function(i){
+			var container = $('#anim-' + i),
+					display = container.find('.display'),
+					spots = container.find('.timeline .spot'),
+					chunks = container.find('.timeline .chunk'),
+					groups = container.find('.timeline .group')
+
+			return {
+				Pop: Action(function(i, n){
+					var s = $(spots.get(i))
+					$(chunks.get(i)).addClass('filled')
+					s.addClass('blink')
+				}),
+
+				Scale: Action(function(i, n){
+					var s = $(spots.get(i))
+					s.addClass('scale')
+					setTimeout(function(){
+						s.removeClass('scale')
+						n(i)
+					}, 500)
+				}),
+
+				Show: Action(function(i, n){
+					display.addClass('blink')
+					display.text(i)
+					setTimeout(function(){
+						display.removeClass('blink')
+						n(i)
+					}, 500)
+				}),
+
+				Expand: Effect(function(i, n){
+					var group = $(groups.get(i))
+					group.addClass('expanded')
+					setTimeout(function(){
+						n(i)
+					}, 500)
+				}),
+				
+				1: Effect(function(i, n){
+					groups.removeClass('expanded')
+					spots.removeClass('blink')
+					chunks.removeClass('filled')
+					
+				}),
+				
+				start: (function(){
+
+					var gimmeFive = function(n){
+						var c = function(i){setTimeout(function(){
+							n(i)
+							if(i < 4) c(i+1)
+						}, 600)}
+						c(0)
+					}
+
+					return function(n){ 
+						$('#start-' + i).bind('click', function(e){
+							e.preventDefault()
+							gimmeFive(n)
+						})
+					}
+				})()
+			}
+		}
+		
+		with(ƒs(1)){
+			When(start)
+				.await(Pop)
+				.subscribe()
+		}
+		
+	})
+	</script>
+</head>
+<body>
+
 	<header>
-		<div id="logo">
-			<section>
-				<article id="download">
-					<span class="size">3</span>
-					<span class="unit">kb</span>
-					<p>12kb unminified</p>
-					<a href="#">Download</a>
-				</article>
-				<article id="fork">
-					<a href="#">Fork on Github</a>
-					<a href="#">Follow @skaalf</a>
-				</article>
-				<div id="sheet"><div></div>
-				</div>
-			</section>
+			<img	class="logo"/>
+			<h1>procrastination.js</h1>
 		</div>
 	</header>
 
-<div id="content">
+	<div id="content">
 
-	<article class="about">
-		<h1>What's procrastination.js ?</h1>
-		<p><strong>procratination.js</strong> makes it easy to create realtime web applications using pure Javascript, by replacing the old callback paradigm, by a stream of events called a Reactive. You're not working on discrete events anymore, but with a continuous, possibly infinite, list of incoming data of any kind. Reactives have the traditionnal list methods that you are used to, like filter and map, are immutable, and reusable.</p>
-	</article>
+		<article class="about">
+			TODO: Konami
+		</article>
 
-	<article class="docs">
-		<h1>Documentation</h1>
-		
-	</article>
+		<article class="docs" id="anim-1">
+			<section>
+				<h2><span>01</span>Basic</h2>
+				<div class="anim-box">
+					<div class="timeline">
+						<span class="chunk"><span></span></span>
+						<span class="chunk"><span></span></span>
+						<span class="chunk"><span></span></span>
+						<span class="chunk"><span></span></span>
 
-</div>
-	</body>
+						<span class="spot blink">0</span>
+						<span class="spot">1</span>
+						<span class="spot">2</span>
+						<span class="spot">3</span>
+						<span class="spot">4</span>
+					</div>
+				</div>
+				<a href="#" id="start-1">start</a>
+			</section>
+			<section class="code">
+				<pre>
+					<code>
+When(start)
+  .await(Scale)
+  .subscribe()
+					</code>
+				</pre>
+			</section>
+		</article>
+	</div>
+</body>
 </html>
 
 
