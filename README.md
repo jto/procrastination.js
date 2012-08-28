@@ -1,8 +1,8 @@
-# procratination.js
+# procrastination.js
 
 ## What is it?
 
-procratination.js makes it easy to create realtime web applications using pure Javascript,
+procrastination.js makes it easy to create realtime web applications using pure Javascript,
 by replacing the old callback paradigm, by a stream of events called a Reactive.
 You're not working on discrete events anymore, but with a continuous, possibly infinite, list of incoming data of any kind.
 Reactives have the traditionnal list methods that you are used to, like filter and map, are immutable, and reusable.
