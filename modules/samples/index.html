@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>procrastination.js</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="jq.js" type="text/javascript" charset="utf-8"></script>
+    <script src="../../src/procrastination.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+
+var mousedown = function(n){ $('#drag').mousedown(n) }
+var mousemove = function(n){ $(document.body).mousemove(n) }
+var mouseup = function(n){ $(document.body).mouseup(n) }
+
+var Move = Effect(function(x){
+  $('#drag').css('-webkit-transform', 'translateX(' + x + 'px)')
+})
+
+When($)
+  .flatmap(function(v){
+    return When(mousedown)
+  })
+  .flatmap(function(v){
+    return When(mousemove)
+  })
+  .map(function(e){
+    return e.pageX
+  })
+  .await(Move)
+  .flatmap(function(v){
+    return When(mouseup).mapVal(this.ƒ)
+  })
+  .await(Action(function(ƒ){
+    $(document.body).unbind(ƒ)
+  }))
+  .subscribe()
+    </script>
+    <style type="text/css" media="screen">
+      #drag {
+        background: #4D3899;
+        height: 100px;
+        width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="wrapper">
+      <header>
+        <h1>TouchEvents</h1>
+      </header>
+      <div id="drag"> </div>
+      <ul>
+      </ul>
+    </div>
+  </body>
+</html>
