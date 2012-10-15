@@ -216,7 +216,7 @@
 	// <pre>
 	// var logThenDoStuffAction = log.then(doRealStuff)
 	// </pre>
-	// or 
+	// or
 	// <pre>
 	// var thenDoStuffThenLogAction = doRealStuff.then(log)
 	// </pre>
@@ -277,7 +277,7 @@
 				return v[0]
 			})
 		}
-		
+
 		A.prototype.snd = function(){
 			return this.map(function(v){
 				return v[1]
@@ -312,8 +312,15 @@
 				.then(b)
 		}
 
-	// 
+	//
 		return new A(act)
+	}
+
+	function Evt(e) {
+		return {
+			bind: e && (e.bind || e) || noop,
+			unbind: e && e.unbind || noop
+		}
 	}
 
 	// TODO: maybe events should be composable like Action
@@ -321,14 +328,15 @@
 	// ## Reactive
 	// Reactive are entry points where you route events from
 	global.When = (function() {
-		function R(source, lambda) {
+		function R(e, lambda) {
 			this.lambda = lambda || identity
-			this.source = source || noop
+			this.evt  = Evt(e)
 		}
 
 		R.prototype = M.clone()
 
 		R.Empty = new R()
+		// TODO: source -> evt
 		R.prototype.unit = function(v){
 			return new R(function(n){ return n(v) })
 		}
@@ -340,12 +348,19 @@
 		 * @return
 		 *	 The reactive you expect
 		 */
-		R.prototype.on = function(s) {
+		R.prototype.on = function(e) {
 			var me = this
-			return new R(function (next){
-				me.source(next)
-				s(next)
-			}, this.lambda)
+			var evt = Evt(e)
+			return new R(Evt(
+				function (next){
+					me.evt.bind(next)
+					evt.bind(next)
+				},
+				function(ƒ){
+					me.evt.unbind(ƒ)
+					evt.unbind(ƒ)
+				}
+			), this.lambda)
 		}
 
 		/**
@@ -355,14 +370,22 @@
 		@return
 		 another reactive with both merged
 		*/
+		// TEST: source -> evt
 		R.prototype.merge = function(ot) {
 			var me = this
-			return new R(function(l) {
-				me.source(me.lambda(l))
-				ot.source(ot.lambda(l))
-			}, identity)
+			return new R(Evt(
+				function(l) {
+					me.evt.bind(me.lambda(l))
+					ot.evt.bind(ot.lambda(l))
+				},
+				function(ƒ){
+					me.evt.unbind(me.ƒ)
+					ot.evt.unbind(ot.ƒ)
+				}
+			), identity)
 		}
 
+		// TODO: source -> evt
 		R.prototype.group = function(i) {
 			var vs = [],
 				me = this
@@ -386,6 +409,7 @@
 		 * @return
 		 * The reactive giving elements by groups
 		 */
+		// TODO: source -> evt
 		R.prototype.sliding = function(s) {
 			var vs = [],
 				me = this
@@ -398,6 +422,7 @@
 			})
 		}
 
+		// TODO: source -> evt
 		R.prototype.until = function(p) {
 			var vs = [],
 				me = this
@@ -420,6 +445,7 @@
 		 * @return
 		 * The reactive dropping N first elements
 		 */
+		// TODO: source -> evt
 		R.prototype.drop = function(n) {
 			var s = this.source
 			return new R(function(next){
@@ -429,28 +455,44 @@
 				})
 			}, this.lambda)
 		}
-
-		// TODO: add a dispose method
-		R.prototype.subscribe = function() {
-			//this.source(this.lambda)
-			this.source.call(this, this.lambda)
-		}
-
-		// (R, (v => R)) => R
-		// TODO: merge source && lambda ?
-		R.prototype.flatmap = function(ƒ){
-			var me = this
-			return new R(function(next){
-				var r = this
-				me.source(function(v){
-					var react = ƒ.call(r, me.lambda(v))
-					react.source(function(v2){
-						next(v2)
-					})
-				})
+		
+		// TODO: unsubscribe ?
+		R.prototype.take = function(n) {
+			var state = n
+			return this.await(Effect(function(){
+				state--
+			})).filter(function(){
+				return state >= 0
 			})
 		}
 
+		R.prototype.subscribe = function() {
+			this.evt.bind.call(this, this.lambda)
+		}
+
+		R.prototype.unsubscribe = function() {
+			this.evt.unbind.call(this,this.lambda)
+		}
+
+		// (R, (v => R)) => R
+		R.prototype.flatmap = function(ƒ){
+			var me = this
+			var unbind = noop
+			return new R(Evt(function(next){
+					var r = this
+					me.evt.bind(function(v){
+						var react = ƒ.call(r, me.lambda(v))
+						react.evt.bind(function(v2){
+							next(v2)
+						})
+						unbind = react.evt.unbind // CRAP
+					})
+				},
+				unbind
+			))
+		}
+
+		// TODO: source -> evt
 		R.prototype.mapVal = function(v){
 			return this.map(function(){
 				return v
@@ -467,12 +509,13 @@
 		R.prototype.await = function(a){
 			var me = this
 			return new R(function(next){
-				me.source.call(this, function(v){
+				me.evt.bind.call(this, function(v){
 					a.onComplete(next)._do(v)
 				})
 			})
 		}
 
+		// TODO: source -> evt
 		R.prototype.zip = function(r){
 			var src = this.source,
 				lmbd = this.lambda
@@ -505,16 +548,17 @@
 
 		/**
 		 * Basic foreach
-		 * When reactive is subscribe function will be called for each event reaching 
+		 * When reactive is subscribe function will be called for each event reaching
 		 * this reactive
 		 * @param
 		 * ƒ the callback you want to be called
 		 * @return
 		 * A new reactive calling your callback
-		 */ 
+		 */
+		// TODO: source -> evt
 		R.prototype.foreach = function(ƒ){
 			var me = this
-			return new R(this.source, 
+			return new R(this.source,
 				function(e){
 					var v = me.lambda(e)
 					ƒ(v)
@@ -525,7 +569,7 @@
 		R.prototype.match = function(m){
 			return this.await(m.action())
 		}
-		
+
 		return function(){
 			var r = new R()
 			return r.on.apply(r, Array.prototype.slice.call(arguments))
